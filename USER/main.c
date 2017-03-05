@@ -77,20 +77,20 @@ subsystemMode _nowType = SUBSYSTEM_NONE;
 bool is_driver_open = false;
 bool is_led_open = false;
 /////////////////////CANID///////////////////////////
-#define CAN_Config 21
-#define CAN_Config_Back 22
-#define CAN_Config_LEFTDRIVER_BACK 23
-#define CAN_Config_LEFTDRIVER 24
-#define CAN_Config_RIGHTDRIVER_BACK 25
-#define CAN_Config_RIGHTDRIVER 26
-#define CAN_Config_LED 27
-#define CAN_Config_LED_Back 28
-#define CAN_DEMAND_DHT 29
-#define CAN_DEMAND_DHT_BACK 30
-#define CAN_DEMAND_VOL 31
-#define CAN_DEMAND_VOL_BACK 32
-#define CAN_Config_IO 33
-#define CAN_Config_IO_BACK 34
+#define CAN_Config 0x615
+#define CAN_Config_Back 0x616
+#define CAN_Config_LEFTDRIVER_BACK 0x01
+#define CAN_Config_LEFTDRIVER 0x02
+#define CAN_Config_RIGHTDRIVER_BACK 0x03
+#define CAN_Config_RIGHTDRIVER 0x04
+#define CAN_Config_LED 0x61B
+#define CAN_Config_LED_Back 0x61C
+#define CAN_DEMAND_DHT 0x61D
+#define CAN_DEMAND_DHT_BACK 0x61E
+#define CAN_DEMAND_VOL 0x61F
+#define CAN_DEMAND_VOL_BACK 0x620
+#define CAN_Config_IO 0x621
+#define CAN_Config_IO_BACK 0x622
 //////////////////////FUNC///////////////////////////
 int16_t SetMotorSpeed(CanRxMsg tempRxMsg);
 int16_t GetMotorPos(CanRxMsg tempRxMsg);
