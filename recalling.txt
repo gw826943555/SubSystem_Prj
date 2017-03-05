@@ -1,0 +1,13 @@
+1. 修改../prj/rename.uvproj的项目名称；
+2. 打开项目；
+3. options for target'target1'
+	utilties
+	settings
+	add
+	stm32f10x high-density flash(C8T6应该是128K那个)
+	add
+	ok
+4.1 (not necessary) options for target'target1'
+	output
+	name of executable: rename
+4.2 OK!
