@@ -23,11 +23,13 @@
 
 
 /* Includes ------------------------------------------------------------------*/
+#include "CCAN.h"
 #ifdef __cplusplus
  extern "C" {
 #endif 
 #include "stm32f10x_it.h"
 #include "common.h"	 
+
 void SetSubsystemType();
 void SubsystemDorun();
 void SubsystemLedDo();
@@ -187,9 +189,32 @@ void DMA1_Channel2_IRQHandler()
 }
 
 extern CanRxMsg tempRxMsg; 
+uint8_t IAP_CMD[8]={0x09,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF};
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
   CAN_Receive(CAN1, CAN_FIFO0, &tempRxMsg);
+	if(tempRxMsg.ExtId==0x5005)
+	{
+		for(uint8_t i=0;i<8;++i)
+		{
+			if(tempRxMsg.Data[i]!=IAP_CMD[i])
+				return ;
+		}
+		CanTxMsg rstReplyMsg;
+		rstReplyMsg.ExtId = 0x5004;
+		rstReplyMsg.Data[0] = 0x09;
+		rstReplyMsg.Data[1] = 0x00;
+		rstReplyMsg.Data[2] = 0x00;
+		rstReplyMsg.Data[3] = 0x00;
+		rstReplyMsg.IDE = CAN_Id_Extended;
+		rstReplyMsg.RTR = CAN_RTR_Data;
+		rstReplyMsg.DLC = 4;
+		CanRouter250k.putMsg(rstReplyMsg);
+		CanRouter250k.runTransmitter();
+		for(uint32_t m=0;m<0xffff;++m)
+			;
+		NVIC_SystemReset();
+	}
 	SetSubsystemType();
 	SubsystemDorun();
 	
