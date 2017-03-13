@@ -107,7 +107,8 @@ void SubsystemADC();
 
 int main()
 {
-	//SCB->VTOR=0x08008000;
+	SCB->VTOR=0x08008000;
+	//NVIC_SetVectorTable(NVIC_VectTab_FLASH,0x08008000);
 	CommonConfig();
 	GPIO_ResetBits(GPIOB,GPIO_Pin_6|GPIO_Pin_8);
 	CanRouter250k.InitCan();
@@ -124,6 +125,11 @@ int main()
 		AD_VAL = Get_BatVol();
 		delay_ms(500);
 		DhtTxMsg.Data[1]=DHT_Decode(&Dhttemp,&Dhthumi);			//温湿度解析结果
+//		tempTxMsg.StdId = 0x10;
+//		tempTxMsg.ExtId = 0;
+//		tempTxMsg.Data[0]++;
+//		CanRouter250k.putMsg(tempTxMsg);
+		CanRouter250k.runTransmitter();
 	}
 }
 
@@ -230,7 +236,7 @@ void SubsystemDHTRead()
 {
 	if((tempRxMsg.Data[1]&0x01) == 1) 
 	{  DhtTxMsg.DLC =4;
-     DhtTxMsg.StdId = 30;
+     DhtTxMsg.StdId = CAN_DEMAND_DHT_BACK;
 		 DhtTxMsg.Data[0]=0x00;
 		// DhtTxMsg.Data[1]=0x00;			//DHT_Decode() 解析结果
 		 DhtTxMsg.Data[2]=Dhttemp;
@@ -480,7 +486,7 @@ void SubsystemADC()
 	{
 		
 		ADCMsg.DLC = 2;
-		ADCMsg.StdId = 32;
+		ADCMsg.StdId = CAN_DEMAND_VOL_BACK;
 		ADCMsg.Data[0] =AD_VAL&0xFF;
 		ADCMsg.Data[1] =(AD_VAL>>8)&0xFF;
 		CanRouter250k.putMsg(ADCMsg);

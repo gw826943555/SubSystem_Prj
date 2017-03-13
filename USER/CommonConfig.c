@@ -31,6 +31,7 @@ void CAN_NvicConfig(void)
 void CommonConfig(void)
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); 
+	__set_PRIMASK(0);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);	
 	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
 	Contral_PAR_GPIO_Config();
