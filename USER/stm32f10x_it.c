@@ -192,6 +192,7 @@ extern CanRxMsg tempRxMsg;
 uint8_t IAP_CMD[8]={0x09,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF};
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
+	memset((void*)&tempRxMsg, 0, sizeof(tempRxMsg));
   CAN_Receive(CAN1, CAN_FIFO0, &tempRxMsg);
 	if(tempRxMsg.ExtId==0x5005)
 	{

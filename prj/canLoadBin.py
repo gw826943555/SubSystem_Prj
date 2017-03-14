@@ -96,8 +96,12 @@ send_frame.RemoteFlag = 0
 send_frame.ExternFlag = 1
 send_frame.DataLen = 8
 
+rx_que = []
+
 def sendto_stm32(byte_msg):
     count = 0
+    global rx_que
+    rx_que.clear()
     dll.VCI_ClearBuffer(DEV_TYPE, DEV_IDX, DEV_CH)
     for byte in byte_msg:
         send_frame.Data[count] = byte
@@ -108,28 +112,43 @@ def sendto_stm32(byte_msg):
             dll.VCI_Transmit(DEV_TYPE, DEV_IDX, DEV_CH, byref(send_frame),1)
     if(count > 0):
         send_frame.DataLen = count
-        dll.VCI_Transmit(DEV_TYPE, DEV_IDX, DEV_CH, byref(send_frame),1)      
+        dll.VCI_Transmit(DEV_TYPE, DEV_IDX, DEV_CH, byref(send_frame),1)
 
-def receivefrom_stm32():
+def send_enterBlByte():
+    send_frame.DataLen = 8
+    for i in range(0,8):
+        send_frame.Data[i] = 0x7F
+    dll.VCI_Transmit(DEV_TYPE, DEV_IDX, DEV_CH, byref(send_frame),1)
+
+def receivefrom_stm32(len):
     timeup = 0
-    while True:
+    global rx_que
+    while rx_que.__len__() < len:
         frame_num = dll.VCI_Receive(DEV_TYPE, DEV_IDX, DEV_CH, rxbuff, BUFF_LEN, 0)
-        if(frame_num > 0 or timeup > 50):
-            break
+        if(frame_num > 0):
+            for i in range(0, frame_num):
+                if(rxbuff[i].ID != mcuUpwardCanId):
+                    continue
+                for j in range(0,rxbuff[i].DataLen):
+                    rx_que += bytes([rxbuff[i].Data[j]])
+        elif(timeup > 50):
+            print('time out')
+            return b''
         else:
             time.sleep(0.01)
             timeup = timeup + 1
-    databuf = b''
-    for i in range(0, frame_num):
-        if(rxbuff[i].ID != mcuUpwardCanId):
-            continue
-        for j in range(0,rxbuff[i].DataLen):
-            databuf += bytes([rxbuff[i].Data[j]])
-    return databuf
+        sys.stdout.flush()
+    
+    ret = rx_que[0:len]
+    rx_que[0:len] = []
+    
+    return ret
 
 def confirm_ack():
-    stmback = receivefrom_stm32()
-    if stmback != ACK:
+    stmback = receivefrom_stm32(1)
+    if stmback.__len__() < 1:
+        return False
+    elif stmback[0] != ACK[0]:
         print('not ack:'+ str(stmback))
         return False
     else:
@@ -197,24 +216,35 @@ sys.stdout.flush()
 isInApp = True
 
 sendto_stm32(byteReset)
-if(dll.VCI_Receive(DEV_TYPE, DEV_IDX, DEV_CH, rxbuff, BUFF_LEN, 0) > 0):
-    if(rxbuff[0].Data[0] == 0x1F):
-        time.sleep(0.5)
-        dll.VCI_ClearBuffer(DEV_TYPE, DEV_IDX, DEV_CH)
-        print("already in bootloader")
-        isInApp = False
-
+stmback = receivefrom_stm32(1)
+if(stmback[0] == NACK[0]):
+    print("already in bootloader")
+    isInApp = False
+elif (stmback[0] == byteReset[0]):
+    print("jump from app")
+else:
+    print("don't know where it is, get", stmback[0])
+# if(dll.VCI_Receive(DEV_TYPE, DEV_IDX, DEV_CH, rxbuff, BUFF_LEN, 0) > 0):
+#     if(rxbuff[0].Data[0] == 0x1F):
+#         time.sleep(0.5)
+#         dll.VCI_ClearBuffer(DEV_TYPE, DEV_IDX, DEV_CH)
+#         print("already in bootloader")
+#         isInApp = False
+sys.stdout.flush()
 while(isInApp):
-    sendto_stm32(byteEnterBL)
+    send_enterBlByte()
+    time.sleep(0.02)
     if(dll.VCI_Receive(DEV_TYPE, DEV_IDX, DEV_CH, rxbuff, BUFF_LEN, 0) > 0):
-        if(rxbuff[0].Data[0] == 0x1F):
+        if(rxbuff[0].Data[0] == NACK[0]):
+            print('jump success')
             dll.VCI_ClearBuffer(DEV_TYPE, DEV_IDX, DEV_CH)
             break
         else:
+            print('error , get', rxbuff[0].Data[0])
             dll.VCI_ClearBuffer(DEV_TYPE, DEV_IDX, DEV_CH)
-        
+        sys.stdout.flush()
+
 time.sleep(0.1)
-dll.VCI_ClearBuffer(DEV_TYPE, DEV_IDX, DEV_CH)
 
 i = 0
 length = len(data)
@@ -252,11 +282,36 @@ while i < length:
 
 time.sleep(0.1)
 print('write boot param')
-sendto_stm32(b'\x31\xce\x08\x00\x78\x00\x70\x03\xaa\xaa\x55\x55\x03')
+while True:
+    sendto_stm32(b'\x31\xce')
+    if confirm_ack() == False:
+        print('WM cmd NACK')
+        continue
+    sendto_stm32(b'\x08\x00\x78\x00\x70')
+    if confirm_ack() == False:
+        print('WM address NACK')
+        continue
+    sendto_stm32(b'\x03\xaa\xaa\x55\x55\x03')
+    if confirm_ack() == False:
+        print('WM data NACK')
+        continue
+    break
+    sys.stdout.flush()
+
 print('jump to app')
-time.sleep(1)
-sendto_stm32(b'\x21\xde\x08\x00\x80\x00\x88')
-time.sleep(1)
+
+while True:
+    sendto_stm32(b'\x21\xde')
+    if confirm_ack() == False:
+        print('jump cmd NACK')
+        continue
+    sendto_stm32(b'\x08\x00\x80\x00\x88')
+    
+    if confirm_ack() == False:
+        print('jump addr NACK')
+        continue
+    break
+time.sleep(0.1)
 dll.VCI_CloseDevice(DEV_TYPE, 0)
 print('UsbCanTool Close')
 sys.stdout.flush()
