@@ -496,91 +496,101 @@ void SubsystemADC()
 
 ////////////////////////Motor Drivers//////////////////////////
 int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
-{	
-
- if((tempRxMsg.StdId == CAN_Config_LEFTDRIVER) && (tempRxMsg.Data[5]==0x10)) //左电机
- {
-	 if(tempRxMsg.Data[0] == 0xFF) //负速度
+{
+	if(tempRxMsg.StdId == CAN_Config_LEFTDRIVER) //左电机
+	{
+	 if(tempRxMsg.Data[5]==0x10)
 	 {
-		SPEED.byte[0]=tempRxMsg.Data[3];
-	  SPEED.byte[1]=tempRxMsg.Data[2];
-		setspeed=(((u16)(~(SPEED.speed-1)))*stomin)/(unit*series*period);     
-		GPIO_ResetBits(GPIOA,GPIO_Pin_2);  // set left wheel direction
-		TIM_SetCompare1(TIM4,setspeed);   
-		setspeed =0;
-		 
-		//send ok msg
-    okTxMsg.DLC = 6;
-    okTxMsg.StdId = CAN_Config_LEFTDRIVER_BACK;
-		okTxMsg.Data[5]=0x10;
-    okTxMsg.Data[4] =	0;
-		CanRouter250k.putMsg(okTxMsg);
-		CanRouter250k.runTransmitter();
-    		 
+		 if(tempRxMsg.Data[0] == 0xFF) //负速度
+		 {
+				SPEED.byte[0]=tempRxMsg.Data[3];
+				SPEED.byte[1]=tempRxMsg.Data[2];
+				setspeed=(((u16)(~(SPEED.speed-1)))*stomin)/(unit*series*period);     
+				GPIO_ResetBits(GPIOA,GPIO_Pin_2);  // set left wheel direction
+				TIM_SetCompare1(TIM4,setspeed);   
+				setspeed =0;
+		 }
+		 else//正速度
+		 {
+				SPEED.byte[0]=tempRxMsg.Data[3];
+				SPEED.byte[1]=tempRxMsg.Data[2];
+				setspeed=(SPEED.speed*stomin)/(unit*series*period);
+				GPIO_SetBits(GPIOA,GPIO_Pin_2); // set left wheel direction
+				TIM_SetCompare1(TIM4,setspeed);
+				setspeed =0;
+			}
+		}
+		if(tempRxMsg.Data[4]==0x10)
+		{
+			CanTxMsg _temp;
+			_temp.DLC=6;
+			_temp.StdId=CAN_Config_LEFTDRIVER_BACK;
+			_temp.Data[0]=0;
+			_temp.Data[1]=0;
+			_temp.Data[2]=0;
+			_temp.Data[3]=0;
+			_temp.Data[4]=0x10;
+			_temp.Data[5]=tempRxMsg.Data[5];
+			CanRouter250k.putMsg(_temp);
+			CanRouter250k.runTransmitter();
+		}else{
+			okTxMsg.DLC = 6;
+			okTxMsg.StdId = CAN_Config_LEFTDRIVER_BACK;
+			okTxMsg.Data[5]=0x10;
+			okTxMsg.Data[4] =	0;
+			CanRouter250k.putMsg(okTxMsg);
+			CanRouter250k.runTransmitter();
+		}
 		return 1;
-	 }
-	 
-	 else//正速度
-	 {
-		SPEED.byte[0]=tempRxMsg.Data[3];
-	  SPEED.byte[1]=tempRxMsg.Data[2];
-		setspeed=(SPEED.speed*stomin)/(unit*series*period);
-		GPIO_SetBits(GPIOA,GPIO_Pin_2); // set left wheel direction
-		TIM_SetCompare1(TIM4,setspeed);
-		setspeed =0;
-		 
-		 //send ok msg
-		okTxMsg.DLC = 6;
-    okTxMsg.StdId = CAN_Config_LEFTDRIVER_BACK;
-		okTxMsg.Data[5]=0x10;
-    okTxMsg.Data[4] =	0;
-		CanRouter250k.putMsg(okTxMsg);
-		CanRouter250k.runTransmitter();
-		return 1;
-	 }
- }
+	}
  
- else if((tempRxMsg.StdId == CAN_Config_RIGHTDRIVER) && (tempRxMsg.Data[5]==0x10)) //右电机
- {
-	  if(tempRxMsg.Data[0] == 0xFF) //负速度
-	 {
-		SPEED.byte[0]=tempRxMsg.Data[3];
-	  SPEED.byte[1]=tempRxMsg.Data[2];
-		setspeed=(((u16)(~(SPEED.speed-1)))*stomin)/(unit*series*period);
-		GPIO_ResetBits(GPIOA,GPIO_Pin_3); // set right wheel direction
-		TIM_SetCompare3(TIM4,setspeed); 
-		setspeed =0;
-		
-		//send ok msg
-		okTxMsg.DLC = 6;
-    okTxMsg.StdId = CAN_Config_RIGHTDRIVER_BACK;
-		okTxMsg.Data[5]=0x10;
-    okTxMsg.Data[4] =	0;
-		CanRouter250k.putMsg(okTxMsg);
-		CanRouter250k.runTransmitter();
+	else if(tempRxMsg.StdId == CAN_Config_RIGHTDRIVER) //右电机
+	{
+		if(tempRxMsg.Data[5]==0x10)
+		{
+			if(tempRxMsg.Data[0] == 0xFF) //负速度
+			{
+				SPEED.byte[0]=tempRxMsg.Data[3];
+				SPEED.byte[1]=tempRxMsg.Data[2];
+				setspeed=(((u16)(~(SPEED.speed-1)))*stomin)/(unit*series*period);
+				GPIO_ResetBits(GPIOA,GPIO_Pin_3); // set right wheel direction
+				TIM_SetCompare3(TIM4,setspeed); 
+				setspeed =0;
+			}
+			else//正速度
+			{
+				SPEED.byte[0]=tempRxMsg.Data[3];
+				SPEED.byte[1]=tempRxMsg.Data[2];
+				setspeed=(SPEED.speed*stomin)/(unit*series*period);
+				GPIO_SetBits(GPIOA,GPIO_Pin_3); // set right wheel direction
+				TIM_SetCompare3(TIM4,setspeed);
+				setspeed =0;
+			}
+		}
+		if(tempRxMsg.Data[4]==0x10)
+		{
+			CanTxMsg _temp;
+			_temp.DLC=6;
+			_temp.StdId=CAN_Config_RIGHTDRIVER_BACK;
+			_temp.Data[0]=0;
+			_temp.Data[1]=0;
+			_temp.Data[2]=0;
+			_temp.Data[3]=0;
+			_temp.Data[4]=0x10;
+			_temp.Data[5]=tempRxMsg.Data[5];
+			CanRouter250k.putMsg(_temp);
+			CanRouter250k.runTransmitter();
+		}else{
+			okTxMsg.DLC = 6;
+			okTxMsg.StdId = CAN_Config_RIGHTDRIVER_BACK;
+			okTxMsg.Data[5]=0x10;
+			okTxMsg.Data[4] =	0;
+			CanRouter250k.putMsg(okTxMsg);
+			CanRouter250k.runTransmitter();
+		}
 		return 1;
-	 }
-	 else//正速度
-	 {
-		SPEED.byte[0]=tempRxMsg.Data[3];
-	  SPEED.byte[1]=tempRxMsg.Data[2];
-		setspeed=(SPEED.speed*stomin)/(unit*series*period);
-		GPIO_SetBits(GPIOA,GPIO_Pin_3); // set right wheel direction
-		TIM_SetCompare3(TIM4,setspeed);
-	  setspeed =0;
- 		 
-		//send ok msg 
-		okTxMsg.DLC = 6;
-    okTxMsg.StdId = CAN_Config_RIGHTDRIVER_BACK;
-		okTxMsg.Data[5]=0x10;
-    okTxMsg.Data[4] =	0;
-		CanRouter250k.putMsg(okTxMsg);
-		CanRouter250k.runTransmitter();
-		return 1;
-	 }
- }
- 
- else{ return 0;}
+	}
+ return 0;
 } 
 
 void IsNewHallDataIn()
