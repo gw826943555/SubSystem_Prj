@@ -404,6 +404,11 @@
               <FileType>1</FileType>
               <FilePath>..\USER\CPWM.c</FilePath>
             </File>
+            <File>
+              <FileName>IO.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\IO.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -591,6 +596,21 @@
               <FileName>stm32f10x_adc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Libraries\src\stm32f10x_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_bkp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\src\stm32f10x_bkp.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\src\stm32f10x_rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_pwr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\src\stm32f10x_pwr.c</FilePath>
             </File>
           </Files>
         </Group>

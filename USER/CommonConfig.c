@@ -4,7 +4,7 @@
 void Contral_PAR_GPIO_Config(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB , ENABLE);
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB|RCC_APB2Periph_GPIOC , ENABLE);
 	GPIO_DeInit(GPIOA);
   GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_6|GPIO_Pin_7| GPIO_Pin_8| GPIO_Pin_9|GPIO_Pin_4|GPIO_Pin_5;  //控制继电器输出高电平24V
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;		    
@@ -14,6 +14,8 @@ void Contral_PAR_GPIO_Config(void)
 	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_6|GPIO_Pin_8;
 	GPIO_Init(GPIOB,&GPIO_InitStructure);
 	GPIO_ResetBits(GPIOB,GPIO_Pin_6|GPIO_Pin_8);
+	
+	
 }
                                                                                                  
 void CAN_NvicConfig(void)
@@ -31,7 +33,7 @@ void CAN_NvicConfig(void)
 void CommonConfig(void)
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); 
-	__set_PRIMASK(0);
+	__set_PRIMASK(0);																								//鍏佽涓柇
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);	
 	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
 	Contral_PAR_GPIO_Config();

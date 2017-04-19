@@ -14,7 +14,7 @@ canCharDev.ioctl("readTimeout", 1)
 
 canIapDev = CIapDev(canCharDev, flashMap_F1)
 canIapDev.resetToBootloader()
-canIapDev.resetBoard()
+#canIapDev.resetBoard()
 ver = canIapDev.getBootLoaderVersion()
 canIapDev.loadBin('.\\out\\test1.bin')
 canIapDev.writeBootParam(CIapDev.byteBootParam_APP)

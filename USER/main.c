@@ -13,6 +13,7 @@
 #include "ColorArray.hpp"
 #include "ADC.h"
 #include "delay.h"
+#include "IO.h"
 
 enum subsystemMode
 {
@@ -31,10 +32,10 @@ u16 speed;
 u8 byte[2];
 }SPEED;	
 u16 setspeed =0;
-u16 unit =10; //µ•Œª0.1counts/s
-u16 series =24;//µÁª˙º∂ ˝
-u16 stomin =60;//◊™ÀŸµ•Œª◊™ªª
-u16 period =3;//◊™ÀŸ”Î’ºø’±»÷Æ±»
+u16 unit =10; 									//Âçï‰Ωç0.1counts/s
+u16 series =24;									//ÁîµÊú∫Á∫ßÊï∞
+u16 stomin =60;									//ËΩ¨ÈÄüÂçï‰ΩçËΩ¨Êç¢
+u16 period =3;									//ËΩ¨ÈÄü‰∏éÂç†Á©∫ÊØî‰πãÊØî
 CanTxMsg tempTxMsg;
 CanRxMsg tempRxMsg;  
 CanTxMsg okTxMsg;
@@ -117,6 +118,7 @@ int main()
 	DHT_Init();  //DHT_Init
 	DHT_TimerInit();
 	BatAD_Init();//ADC_Init
+	SFIO_Init();
 	
 	while(1)
 	{
@@ -124,7 +126,7 @@ int main()
 		Clear();
 		AD_VAL = Get_BatVol();
 		delay_ms(500);
-		DhtTxMsg.Data[1]=DHT_Decode(&Dhttemp,&Dhthumi);			//Œ¬ ™∂»Ω‚ŒˆΩ·π˚
+		DhtTxMsg.Data[1]=DHT_Decode(&Dhttemp,&Dhthumi);			//Ê∏©ÊπøÂ∫¶Ëß£ÊûêÁªìÊûú
 //		tempTxMsg.StdId = 0x10;
 //		tempTxMsg.ExtId = 0;
 //		tempTxMsg.Data[0]++;
@@ -146,12 +148,12 @@ void SetSubsystemType()
 			  BSP_CONFIG();//StCan_Init
         TIM_Cmd(TIM2, ENABLE);
         GPIOA->BRR |= 0x0001; 
-				//StopMotor();          //πÿ±’«˝∂Ø∆˜
+				//StopMotor();          //ÂÖ≥Èó≠È©±Âä®Âô®
 				//TIM_Cmd(TIM4, DISABLE);  
 				//EXTI_DeInit();
 			}else{
 				is_led_open = false;
-				TIM_Cmd(TIM2, DISABLE);    //πÿ±’LED
+				TIM_Cmd(TIM2, DISABLE);    //ÂÖ≥Èó≠LED
 				DMA_Cmd(DMA1_Channel2, DISABLE);
 				okTxMsg.Data[0]&=0xFE;
 			}
@@ -167,7 +169,7 @@ void SetSubsystemType()
 			}else{
 				is_driver_open=false;
 				okTxMsg.Data[0]&=0xFD;
-				StopMotor();          //πÿ±’«˝∂Ø∆˜
+				StopMotor();          //ÂÖ≥Èó≠È©±Âä®Âô®
 				TIM_Cmd(TIM4, DISABLE);  
 				EXTI_DeInit();
 			}
@@ -238,7 +240,7 @@ void SubsystemDHTRead()
 	{  DhtTxMsg.DLC =4;
      DhtTxMsg.StdId = CAN_DEMAND_DHT_BACK;
 		 DhtTxMsg.Data[0]=0x00;
-		// DhtTxMsg.Data[1]=0x00;			//DHT_Decode() Ω‚ŒˆΩ·π˚
+		// DhtTxMsg.Data[1]=0x00;			//DHT_Decode() Ëß£ÊûêÁªìÊûú
 		 DhtTxMsg.Data[2]=Dhttemp;
 		 DhtTxMsg.Data[3]=Dhthumi;
 		 CanRouter250k.putMsg(DhtTxMsg);
@@ -257,7 +259,7 @@ void SubsystemIOConfig()
 			InputIOMsg.Data[0] =0x01;
 			InputIOMsg.Data[1] = (((ReadInputIO>>2)&0x0F)|((ReadInputIO>>6)&0xF0));
 			InputIOMsg.Data[2] = (ReadInputIO>>14)&0x03;		
-			InputIOMsg.Data[3] = 0;
+			InputIOMsg.Data[3] = SFIO_GetStatus();
 			CanRouter250k.putMsg(InputIOMsg);
 			CanRouter250k.runTransmitter();
 	 }
@@ -268,51 +270,37 @@ void SubsystemIOConfig()
 		 {
 				if((tempRxMsg.Data[2])&0x04) 
 				{
-						GPIOB->CRL&=0xF0FFFFFF;								//IOƒ£ Ω–ﬁ∏ƒŒ™Õ∆ÕÏ ‰≥ˆ
+						GPIOB->CRL&=0xF0FFFFFF;								//IOÊ®°Âºè‰øÆÊîπ‰∏∫Êé®ÊåΩËæìÂá∫
 						GPIOB->CRL|=0x03000000;
 						GPIO_SetBits(GPIOB, GPIO_Pin_6);
 				}
 				else
 				{
-						GPIOB->CRL&=0xF0FFFFFF;								//IOƒ£ Ω–ﬁ∏ƒŒ™Õ∆ÕÏ ‰≥ˆ
+						GPIOB->CRL&=0xF0FFFFFF;								//IOIOÊ®°Âºè‰øÆÊîπ‰∏∫Êé®ÊåΩËæìÂá∫
 						GPIOB->CRL|=0x03000000;
 						GPIO_ResetBits(GPIOB, GPIO_Pin_6);
 				}
 				
 				if((tempRxMsg.Data[2])&0x10) 
 				{
-					GPIOB->CRH&=0xFFFFFFF0;								//IOƒ£ Ω–ﬁ∏ƒŒ™Õ∆ÕÏ ‰≥ˆ
+					GPIOB->CRH&=0xFFFFFFF0;								//IOIOÊ®°Âºè‰øÆÊîπ‰∏∫Êé®ÊåΩËæìÂá∫
 					GPIOB->CRH|=0x00000003;
 					GPIO_SetBits(GPIOB, GPIO_Pin_8);
 				}
 				else
 				{
-					GPIOB->CRH&=0xFFFFFFF0;								//IOƒ£ Ω–ﬁ∏ƒŒ™Õ∆ÕÏ ‰≥ˆ
+					GPIOB->CRH&=0xFFFFFFF0;								//IOIOÊ®°Âºè‰øÆÊîπ‰∏∫Êé®ÊåΩËæìÂá∫
 					GPIOB->CRH|=0x00000003;
 					GPIO_ResetBits(GPIOB, GPIO_Pin_8);
-				}
-				
-				if((tempRxMsg.Data[1]&0x10)==0x10)			//PWR_EN4
-				{
-					GPIO_SetBits(GPIOA,GPIO_Pin_9);
-				}else
-				{
-					GPIO_ResetBits(GPIOA,GPIO_Pin_9);
-				}
-				
-				if((tempRxMsg.Data[1]&0x20)==0x20)			//PWR_EN5
-				{
-					GPIO_SetBits(GPIOA,GPIO_Pin_8);
-				}else
-				{
-					GPIO_ResetBits(GPIOA,GPIO_Pin_8);
 				}
 		 }
 		 else
 		 {
-			 GPIO_SetBits(GPIOA,GPIO_Pin_8);				//¥Úø™«˝∂Ø∆˜µÁ‘¥
+			 GPIO_SetBits(GPIOA,GPIO_Pin_8);				//ÊâìÂºÄÈ©±Âä®Âô®ÁîµÊ∫ê
 			 GPIO_SetBits(GPIOA,GPIO_Pin_9);
 		 }
+		 
+		 
 		 
 		 if(tempRxMsg.Data[1]&0x01)								//PD0
 		 {
@@ -346,9 +334,32 @@ void SubsystemIOConfig()
 			 GPIO_ResetBits(GPIOA,GPIO_Pin_6);
 		 }
 		 
+		 if((tempRxMsg.Data[1]&0x10)==0x10)			//PWR_EN4
+			{
+				GPIO_SetBits(GPIOA,GPIO_Pin_9);
+			}else
+			{
+				GPIO_ResetBits(GPIOA,GPIO_Pin_9);
+			}
+			
+			if((tempRxMsg.Data[1]&0x20)==0x20)			//PWR_EN5
+			{
+				GPIO_SetBits(GPIOA,GPIO_Pin_8);
+			}else
+			{
+				GPIO_ResetBits(GPIOA,GPIO_Pin_8);
+			}
+			
+			if((tempRxMsg.Data[3]&0x01)==Bit_RESET)
+			{
+				EMG_ENCmd(DISABLE);
+			}else{
+				EMG_ENCmd(ENABLE);
+			}
+		 
 		if(((tempRxMsg.Data[1]>>4)&0x08) == 8)
 		{
-			GPIOA->CRL&=0xFFFFFF0F;								//IOƒ£ Ω–ﬁ∏ƒŒ™Õ∆ÕÏ ‰≥ˆ
+			GPIOA->CRL&=0xFFFFFF0F;								//IOÊ®°Âºè‰øÆÊîπ‰∏∫Êé®ÊåΩËæìÂá∫
 			GPIOA->CRL|=0x00000030;
 			GPIO_SetBits(GPIOA, GPIO_Pin_1);
 		}
@@ -387,25 +398,25 @@ void SubsystemIOConfig()
 		
 		if(((tempRxMsg.Data[2])&0x01) == 1)			//PWMA2
 		{
-			GPIOA->CRL&=0xFFFFF0FF;								//IOƒ£ Ω–ﬁ∏ƒŒ™Õ∆ÕÏ ‰≥ˆ
+			GPIOA->CRL&=0xFFFFF0FF;								//IOÊ®°Âºè‰øÆÊîπ‰∏∫Êé®ÊåΩËæìÂá∫
 			GPIOA->CRL|=0x00000300;
 			GPIO_SetBits(GPIOA, GPIO_Pin_2);
 		}
 		else{
-			GPIOA->CRL&=0xFFFFF0FF;								//IOƒ£ Ω–ﬁ∏ƒŒ™Õ∆ÕÏ ‰≥ˆ
+			GPIOA->CRL&=0xFFFFF0FF;								//IOÊ®°Âºè‰øÆÊîπ‰∏∫Êé®ÊåΩËæìÂá∫
 			GPIOA->CRL|=0x00000300;
 			GPIO_ResetBits(GPIOA, GPIO_Pin_2);
 		}
 		
 		if(((tempRxMsg.Data[2])&0x02) == 2)  		//PWMA3
 		{
-			GPIOA->CRL&=0xFFFF0FFF;								//IOƒ£ Ω–ﬁ∏ƒŒ™Õ∆ÕÏ ‰≥ˆ
+			GPIOA->CRL&=0xFFFF0FFF;								//IOÊ®°Âºè‰øÆÊîπ‰∏∫Êé®ÊåΩËæìÂá∫
 			GPIOA->CRL|=0x00003000;
 			GPIO_SetBits(GPIOA, GPIO_Pin_3);
 		}
 		else
 		{
-			GPIOA->CRL&=0xFFFF0FFF;								//IOƒ£ Ω–ﬁ∏ƒŒ™Õ∆ÕÏ ‰≥ˆ
+			GPIOA->CRL&=0xFFFF0FFF;								//IOÊ®°Âºè‰øÆÊîπ‰∏∫Êé®ÊåΩËæìÂá∫
 			GPIOA->CRL|=0x00003000;
 			GPIO_ResetBits(GPIOA, GPIO_Pin_3);
 		}
@@ -414,14 +425,14 @@ void SubsystemIOConfig()
 		{
 			if(((tempRxMsg.Data[1]>>4)&0x04) == 4)  
 			{
-				GPIOA->CRL&=0xFFFFFFF0;								//IOƒ£ Ω–ﬁ∏ƒŒ™Õ∆ÕÏ ‰≥ˆ
+				GPIOA->CRL&=0xFFFFFFF0;								//IOÊ®°Âºè‰øÆÊîπ‰∏∫Êé®ÊåΩËæìÂá∫
 				GPIOA->CRL|=0x00000003;
 				GPIO_SetBits(GPIOA, GPIO_Pin_0);
 			}
 		  else
 			{
 				GPIO_ResetBits(GPIOA, GPIO_Pin_0);
-				GPIOA->CRL&=0xFFFFFFF0;								//IOƒ£ Ω–ﬁ∏ƒŒ™Õ∆ÕÏ ‰≥ˆ
+				GPIOA->CRL&=0xFFFFFFF0;								//IOÊ®°Âºè‰øÆÊîπ‰∏∫Êé®ÊåΩËæìÂá∫
 				GPIOA->CRL|=0x00000003;
 			}
 		}
@@ -497,11 +508,11 @@ void SubsystemADC()
 ////////////////////////Motor Drivers//////////////////////////
 int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 {
-	if(tempRxMsg.StdId == CAN_Config_LEFTDRIVER) //◊ÛµÁª˙
+	if(tempRxMsg.StdId == CAN_Config_LEFTDRIVER) //Â∑¶ÁîµÊú∫
 	{
 	 if(tempRxMsg.Data[5]==0x10)
 	 {
-		 if(tempRxMsg.Data[0] == 0xFF) //∏∫ÀŸ∂»
+		 if(tempRxMsg.Data[0] == 0xFF) //Ë¥üÈÄüÂ∫¶
 		 {
 				SPEED.byte[0]=tempRxMsg.Data[3];
 				SPEED.byte[1]=tempRxMsg.Data[2];
@@ -510,7 +521,7 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 				TIM_SetCompare1(TIM4,setspeed);   
 				setspeed =0;
 		 }
-		 else//’˝ÀŸ∂»
+		 else//Ê≠£ÈÄüÂ∫¶
 		 {
 				SPEED.byte[0]=tempRxMsg.Data[3];
 				SPEED.byte[1]=tempRxMsg.Data[2];
@@ -544,11 +555,11 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 		return 1;
 	}
  
-	else if(tempRxMsg.StdId == CAN_Config_RIGHTDRIVER) //”“µÁª˙
+	else if(tempRxMsg.StdId == CAN_Config_RIGHTDRIVER) //Âè≥ÁîµÊú∫
 	{
 		if(tempRxMsg.Data[5]==0x10)
 		{
-			if(tempRxMsg.Data[0] == 0xFF) //∏∫ÀŸ∂»
+			if(tempRxMsg.Data[0] == 0xFF) //Ë¥üÈÄüÂ∫¶
 			{
 				SPEED.byte[0]=tempRxMsg.Data[3];
 				SPEED.byte[1]=tempRxMsg.Data[2];
@@ -557,7 +568,7 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 				TIM_SetCompare3(TIM4,setspeed); 
 				setspeed =0;
 			}
-			else//’˝ÀŸ∂»
+			else//Ê≠£ÈÄüÂ∫¶
 			{
 				SPEED.byte[0]=tempRxMsg.Data[3];
 				SPEED.byte[1]=tempRxMsg.Data[2];
