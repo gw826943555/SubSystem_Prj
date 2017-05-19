@@ -506,6 +506,7 @@ void SubsystemADC()
 }
 
 ////////////////////////Motor Drivers//////////////////////////
+CanTxMsg _temp;
 int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 {
 	if(tempRxMsg.StdId == CAN_Config_LEFTDRIVER) //左电机
@@ -533,8 +534,9 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 		}
 		if(tempRxMsg.Data[4]==0x10)
 		{
-			CanTxMsg _temp;
+//			CanTxMsg _temp;
 			_temp.DLC=6;
+			_temp.RTR = CAN_RTR_DATA; 
 			_temp.StdId=CAN_Config_LEFTDRIVER_BACK;
 			_temp.Data[0]=0;
 			_temp.Data[1]=0;
@@ -580,8 +582,9 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 		}
 		if(tempRxMsg.Data[4]==0x10)
 		{
-			CanTxMsg _temp;
+//			CanTxMsg _temp;
 			_temp.DLC=6;
+			_temp.RTR = CAN_RTR_DATA; 
 			_temp.StdId=CAN_Config_RIGHTDRIVER_BACK;
 			_temp.Data[0]=0;
 			_temp.Data[1]=0;
