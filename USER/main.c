@@ -321,12 +321,10 @@ void SubsystemIOConfig()
 		 }
 		 else
 		 {
-			 GPIO_SetBits(GPIOA,GPIO_Pin_8);				//打开驱动器电源
-			 GPIO_SetBits(GPIOA,GPIO_Pin_9);
+//			 GPIO_SetBits(GPIOA,GPIO_Pin_8);				//打开驱动器电源
+//			 GPIO_SetBits(GPIOA,GPIO_Pin_9);
 		 }
-		 
-		 
-		 
+		
 		 if(tempRxMsg.Data[1]&0x01)								//PD0
 		 {
 			 GPIO_SetBits(GPIOA,GPIO_Pin_5);
@@ -501,6 +499,7 @@ void SubsystemADC()
 }
 
 ////////////////////////Motor Drivers//////////////////////////
+CanTxMsg _temp;
 int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 {
 	if(tempRxMsg.StdId == CAN_Config_LEFTDRIVER) //左电机
@@ -528,8 +527,9 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 		}
 		if(tempRxMsg.Data[4]==0x10)
 		{
-			CanTxMsg _temp;
+//			CanTxMsg _temp;
 			_temp.DLC=6;
+			_temp.RTR = CAN_RTR_DATA; 
 			_temp.StdId=CAN_Config_LEFTDRIVER_BACK;
 			_temp.Data[0]=0;
 			_temp.Data[1]=0;
@@ -575,8 +575,9 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 		}
 		if(tempRxMsg.Data[4]==0x10)
 		{
-			CanTxMsg _temp;
+//			CanTxMsg _temp;
 			_temp.DLC=6;
+			_temp.RTR = CAN_RTR_DATA; 
 			_temp.StdId=CAN_Config_RIGHTDRIVER_BACK;
 			_temp.Data[0]=0;
 			_temp.Data[1]=0;
