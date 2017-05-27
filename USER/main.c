@@ -132,6 +132,7 @@ int main()
 //		tempTxMsg.Data[0]++;
 //		CanRouter250k.putMsg(tempTxMsg);
 		CanRouter250k.runTransmitter();
+		EMG_ENCmd(ENABLE);
 	}
 }
 
@@ -268,31 +269,55 @@ void SubsystemIOConfig()
 		//��IO		
 		 if(false==is_driver_open)
 		 {
-				if((tempRxMsg.Data[2])&0x04) 
-				{
-						GPIOB->CRL&=0xF0FFFFFF;								//IO模式修改为推挽输出
-						GPIOB->CRL|=0x03000000;
-						GPIO_SetBits(GPIOB, GPIO_Pin_6);
-				}
-				else
-				{
-						GPIOB->CRL&=0xF0FFFFFF;								//IOIO模式修改为推挽输出
-						GPIOB->CRL|=0x03000000;
-						GPIO_ResetBits(GPIOB, GPIO_Pin_6);
-				}
-				
-				if((tempRxMsg.Data[2])&0x10) 
-				{
-					GPIOB->CRH&=0xFFFFFFF0;								//IOIO模式修改为推挽输出
-					GPIOB->CRH|=0x00000003;
-					GPIO_SetBits(GPIOB, GPIO_Pin_8);
-				}
-				else
-				{
-					GPIOB->CRH&=0xFFFFFFF0;								//IOIO模式修改为推挽输出
-					GPIOB->CRH|=0x00000003;
-					GPIO_ResetBits(GPIOB, GPIO_Pin_8);
-				}
+			if(((tempRxMsg.Data[2])&0x01) == 1)			//PWMA2
+			{
+				GPIOA->CRL&=0xFFFFF0FF;								//IO模式修改为推挽输出
+				GPIOA->CRL|=0x00000300;
+				GPIO_SetBits(GPIOA, GPIO_Pin_2);
+			}
+			else{
+				GPIOA->CRL&=0xFFFFF0FF;								//IO模式修改为推挽输出
+				GPIOA->CRL|=0x00000300;
+				GPIO_ResetBits(GPIOA, GPIO_Pin_2);
+			}
+			
+			if(((tempRxMsg.Data[2])&0x02) == 2)  		//PWMA3
+			{
+				GPIOA->CRL&=0xFFFF0FFF;								//IO模式修改为推挽输出
+				GPIOA->CRL|=0x00003000;
+				GPIO_SetBits(GPIOA, GPIO_Pin_3);
+			}
+			else
+			{
+				GPIOA->CRL&=0xFFFF0FFF;								//IO模式修改为推挽输出
+				GPIOA->CRL|=0x00003000;
+				GPIO_ResetBits(GPIOA, GPIO_Pin_3);
+			}
+			if((tempRxMsg.Data[2])&0x04) 
+			{
+					GPIOB->CRL&=0xF0FFFFFF;								//IO模式修改为推挽输出
+					GPIOB->CRL|=0x03000000;
+					GPIO_SetBits(GPIOB, GPIO_Pin_6);
+			}
+			else
+			{
+					GPIOB->CRL&=0xF0FFFFFF;								//IOIO模式修改为推挽输出
+					GPIOB->CRL|=0x03000000;
+					GPIO_ResetBits(GPIOB, GPIO_Pin_6);
+			}
+			
+			if((tempRxMsg.Data[2])&0x10) 
+			{
+				GPIOB->CRH&=0xFFFFFFF0;								//IOIO模式修改为推挽输出
+				GPIOB->CRH|=0x00000003;
+				GPIO_SetBits(GPIOB, GPIO_Pin_8);
+			}
+			else
+			{
+				GPIOB->CRH&=0xFFFFFFF0;								//IOIO模式修改为推挽输出
+				GPIOB->CRH|=0x00000003;
+				GPIO_ResetBits(GPIOB, GPIO_Pin_8);
+			}
 		 }
 		 else
 		 {
@@ -395,33 +420,8 @@ void SubsystemIOConfig()
 			GPIOB->CRH|=0x00000030;
 			GPIO_ResetBits(GPIOB, GPIO_Pin_9);
 		}
-		
-		if(((tempRxMsg.Data[2])&0x01) == 1)			//PWMA2
-		{
-			GPIOA->CRL&=0xFFFFF0FF;								//IO模式修改为推挽输出
-			GPIOA->CRL|=0x00000300;
-			GPIO_SetBits(GPIOA, GPIO_Pin_2);
-		}
-		else{
-			GPIOA->CRL&=0xFFFFF0FF;								//IO模式修改为推挽输出
-			GPIOA->CRL|=0x00000300;
-			GPIO_ResetBits(GPIOA, GPIO_Pin_2);
-		}
-		
-		if(((tempRxMsg.Data[2])&0x02) == 2)  		//PWMA3
-		{
-			GPIOA->CRL&=0xFFFF0FFF;								//IO模式修改为推挽输出
-			GPIOA->CRL|=0x00003000;
-			GPIO_SetBits(GPIOA, GPIO_Pin_3);
-		}
-		else
-		{
-			GPIOA->CRL&=0xFFFF0FFF;								//IO模式修改为推挽输出
-			GPIOA->CRL|=0x00003000;
-			GPIO_ResetBits(GPIOA, GPIO_Pin_3);
-		}
 
-		if(false==is_led_open)
+		if(is_led_open==false)
 		{
 			if(((tempRxMsg.Data[1]>>4)&0x04) == 4)  
 			{
@@ -446,49 +446,44 @@ void SubsystemIOConfig()
 ///////////////////////LED////////////////////////////
 void SubsystemLed()
 {
-		 if(tempRxMsg.StdId == CAN_Config_LED)
-			{
-				if(tempRxMsg.Data[0]<=3){
-				CurrentLBandState = (emode)tempRxMsg.Data[0];}
-				Intensity = tempRxMsg.Data[1];
-				if(tempRxMsg.Data[0] == 1)
-						{
-							BatteryQut = tempRxMsg.Data[2];
-							if(BatteryQut > 100)BatteryQut = 100;
-						}			
-				else if(tempRxMsg.Data[0] == 3)
-						{
-							SpecifiedR = tempRxMsg.Data[2];
-							SpecifiedG = tempRxMsg.Data[3];
-							SpecifiedB = tempRxMsg.Data[4];
-						}		
-				okTxMsg.DLC = 2;
-        okTxMsg.StdId = CAN_Config_LED_Back;
-		    okTxMsg.Data[0]=0x02;
-			  okTxMsg.Data[1]=0xAA;
-		    CanRouter250k.putMsg(okTxMsg);
-		    CanRouter250k.runTransmitter();
-			}	 
-			
+ if(tempRxMsg.StdId == CAN_Config_LED)
+	{
+		if(tempRxMsg.Data[0]<=3){
+		CurrentLBandState = (emode)tempRxMsg.Data[0];}
+		Intensity = tempRxMsg.Data[1];
+		if(tempRxMsg.Data[0] == 1)
+				{
+					BatteryQut = tempRxMsg.Data[2];
+					if(BatteryQut > 100)BatteryQut = 100;
+				}			
+		else if(tempRxMsg.Data[0] == 3)
+				{
+					SpecifiedR = tempRxMsg.Data[2];
+					SpecifiedG = tempRxMsg.Data[3];
+					SpecifiedB = tempRxMsg.Data[4];
+				}		
+		okTxMsg.DLC = 2;
+		okTxMsg.StdId = CAN_Config_LED_Back;
+		okTxMsg.Data[0]=0x02;
+		okTxMsg.Data[1]=0xAA;
+		CanRouter250k.putMsg(okTxMsg);
+		CanRouter250k.runTransmitter();
+	}	 
 }
 void SubsystemLedDo()
 {
-//		if(DMAFlag)
-//			 {
-//			  DMAFlag = 0;
-			  ColorArray::Instance()
-				->set_normal_command( CurrentLBandState, 
-															Intensity, 
-															BatteryQut,
-															SpecifiedR,
-															SpecifiedG,
-															SpecifiedB);
-			  delay_ms(5);
-		  	TIM2->CNT = 0;
-			  DMA_Cmd(DMA1_Channel2, DISABLE);
-			  DMA_SetCurrDataCounter(DMA1_Channel2,DMA_SIZE);
-			  UsrDMACh2_En();
-//		   }
+	ColorArray::Instance()
+	->set_normal_command( CurrentLBandState, 
+												Intensity, 
+												BatteryQut,
+												SpecifiedR,
+												SpecifiedG,
+												SpecifiedB);
+	delay_ms(5);
+	TIM2->CNT = 0;
+	DMA_Cmd(DMA1_Channel2, DISABLE);
+	DMA_SetCurrDataCounter(DMA1_Channel2,DMA_SIZE);
+	UsrDMACh2_En();
 }
 ////////////////////////ADC////////////////////////////////
 void SubsystemADC()
