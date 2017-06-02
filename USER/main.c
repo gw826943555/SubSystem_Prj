@@ -166,7 +166,7 @@ void SetSubsystemType()
 				okTxMsg.Data[0]|=0x02;
 				TIM4_PWM_Init(); //PWM Init
 				Hall_IRQConfig();
-				GPIO_SetBits(GPIOA,GPIO_Pin_8|GPIO_Pin_9);     
+//				GPIO_SetBits(GPIOA,GPIO_Pin_8|GPIO_Pin_9);     
 			}else{
 				is_driver_open=false;
 				okTxMsg.Data[0]&=0xFD;
