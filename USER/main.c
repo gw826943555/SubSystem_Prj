@@ -542,6 +542,10 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 		}else{
 			okTxMsg.DLC = 6;
 			okTxMsg.StdId = CAN_Config_LEFTDRIVER_BACK;
+			okTxMsg.Data[0] = 0;
+			okTxMsg.Data[1] =	0;
+			okTxMsg.Data[2] = 0;
+			okTxMsg.Data[3] =	0;
 			okTxMsg.Data[5]=0x10;
 			okTxMsg.Data[4] =	0;
 			CanRouter250k.putMsg(okTxMsg);
@@ -590,6 +594,10 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 		}else{
 			okTxMsg.DLC = 6;
 			okTxMsg.StdId = CAN_Config_RIGHTDRIVER_BACK;
+			okTxMsg.Data[0] = 0;
+			okTxMsg.Data[1] =	0;
+			okTxMsg.Data[2] = 0;
+			okTxMsg.Data[3] =	0;
 			okTxMsg.Data[5]=0x10;
 			okTxMsg.Data[4] =	0;
 			CanRouter250k.putMsg(okTxMsg);
