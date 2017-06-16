@@ -24,11 +24,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "CCAN.h"
+#include "timer.h"
 #ifdef __cplusplus
  extern "C" {
 #endif 
 #include "stm32f10x_it.h"
-#include "common.h"	 
+#include "common.h"	  
+
 
 void SetSubsystemType();
 void SubsystemDorun();
@@ -143,7 +145,7 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-	//CPUTIMER0_ISR();
+	CPUTIMER0_ISR();
 }
 
 /******************************************************************************/
@@ -210,8 +212,8 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 		rstReplyMsg.IDE = CAN_Id_Extended;
 		rstReplyMsg.RTR = CAN_RTR_Data;
 		rstReplyMsg.DLC = 4;
-		CanRouter250k.putMsg(rstReplyMsg);
-		CanRouter250k.runTransmitter();
+		CanRouter1.putMsg(rstReplyMsg);
+		CanRouter1.runTransmitter();
 		for(uint32_t m=0;m<0xffff;++m)
 			;
 		NVIC_SystemReset();

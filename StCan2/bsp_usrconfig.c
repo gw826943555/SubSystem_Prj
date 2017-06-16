@@ -17,5 +17,5 @@ void BSP_CONFIG(void)
 //	COM1.Init(Baudrate115200,DMA_Enable);
 	TIM2_CONFIG();
 	//CAN1_CONFIG();
-	delay_init();
+//	delay_init();
 }

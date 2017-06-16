@@ -1,19 +1,22 @@
 #include "stm32f10x.h"
 #include "CommonConfig.h"
 #include <stdint.h>
-//#include "Timer.h"
+#include "Timer.h"
 #include "CCan.h"
 #include "CPWM.h"
 //#include "CUartCanProbe.h"
 //#include "CUartConsole.h"
 #include "sys.h"
 #include "dht11.h"
-#include "delay.h"
+//#include "delay.h"
 #include "common.h"
 #include "ColorArray.hpp"
 #include "ADC.h"
 #include "delay.h"
 #include "IO.h"
+
+#include "iap_cmd.h"
+#include "rwIO.h"
 
 enum subsystemMode
 {
@@ -109,30 +112,36 @@ void SubsystemADC();
 int main()
 {
 	SCB->VTOR=0x08008000;
-	//NVIC_SetVectorTable(NVIC_VectTab_FLASH,0x08008000);
-	CommonConfig();
-	GPIO_ResetBits(GPIOB,GPIO_Pin_6|GPIO_Pin_8);
-	CanRouter250k.InitCan();
-	CanRouter250k.InitCanGpio(CCanRouter::GROUP_A11);
-	delay_init();
-	DHT_Init();  //DHT_Init
-	DHT_TimerInit();
-	BatAD_Init();//ADC_Init
-	SFIO_Init();
+	__set_PRIMASK(0);																								//允许中断
+	
+	BaseTimer::Instance()->initialize();
+	Timer HeartBeat(500,500);
+	
+	CanRouter1.InitCan();
+	CanRouter1.InitCanGpio(CCanRouter::GROUP_A11);
+	
+	iap_do_init();
+	rwIO_do_init();
+	
+//	DHT_Init();  //DHT_Init
+//	DHT_TimerInit();
+//	BatAD_Init();//ADC_Init
+//	SFIO_Init();
+	
+	led_init();
 	
 	while(1)
 	{
-		DHT_Start();
-		Clear();
-		AD_VAL = Get_BatVol();
-		delay_ms(500);
-		DhtTxMsg.Data[1]=DHT_Decode(&Dhttemp,&Dhthumi);			//温湿度解析结果
-//		tempTxMsg.StdId = 0x10;
-//		tempTxMsg.ExtId = 0;
-//		tempTxMsg.Data[0]++;
-//		CanRouter250k.putMsg(tempTxMsg);
-		CanRouter250k.runTransmitter();
-		EMG_ENCmd(ENABLE);
+		iap_do_run();
+		rwIO_do_run();
+		
+		CanRouter1.runTransmitter();
+		CanRouter1.runReceiver();
+		
+		if(HeartBeat.isAbsoluteTimeUp())
+		{
+			led_toggle();
+		}
 	}
 }
 
@@ -176,8 +185,8 @@ void SetSubsystemType()
 			}
 			okTxMsg.DLC = 2;
 			okTxMsg.StdId = CAN_Config_Back;		
-			CanRouter250k.putMsg(okTxMsg);
-			CanRouter250k.runTransmitter();
+			CanRouter1.putMsg(okTxMsg);
+			CanRouter1.runTransmitter();
 	}
 	
 	else if((tempRxMsg.StdId == CAN_Config_LEFTDRIVER)||(tempRxMsg.StdId == CAN_Config_RIGHTDRIVER))
@@ -244,8 +253,8 @@ void SubsystemDHTRead()
 		// DhtTxMsg.Data[1]=0x00;			//DHT_Decode() 解析结果
 		 DhtTxMsg.Data[2]=Dhttemp;
 		 DhtTxMsg.Data[3]=Dhthumi;
-		 CanRouter250k.putMsg(DhtTxMsg);
-		 CanRouter250k.runTransmitter();}
+		 CanRouter1.putMsg(DhtTxMsg);
+		 CanRouter1.runTransmitter();}
 }
 //////////////////////////IO/////////////////////////////
 void SubsystemIOConfig()
@@ -261,8 +270,8 @@ void SubsystemIOConfig()
 			InputIOMsg.Data[1] = (((ReadInputIO>>2)&0x0F)|((ReadInputIO>>6)&0xF0));
 			InputIOMsg.Data[2] = (ReadInputIO>>14)&0x03;		
 			InputIOMsg.Data[3] = SFIO_GetStatus();
-			CanRouter250k.putMsg(InputIOMsg);
-			CanRouter250k.runTransmitter();
+			CanRouter1.putMsg(InputIOMsg);
+			CanRouter1.runTransmitter();
 	 }
 	 else if((tempRxMsg.Data[0]&0x02) == 2)
 	 {
@@ -437,8 +446,8 @@ void SubsystemIOConfig()
 		okTxMsg.DLC = 4;
 		okTxMsg.StdId = CAN_Config_IO_BACK;
 		okTxMsg.Data[0]=0x02;
-		CanRouter250k.putMsg(okTxMsg);
-		CanRouter250k.runTransmitter();
+		CanRouter1.putMsg(okTxMsg);
+		CanRouter1.runTransmitter();
 	}
 }
 ///////////////////////LED////////////////////////////
@@ -464,8 +473,8 @@ void SubsystemLed()
 		okTxMsg.StdId = CAN_Config_LED_Back;
 		okTxMsg.Data[0]=0x02;
 		okTxMsg.Data[1]=0xAA;
-		CanRouter250k.putMsg(okTxMsg);
-		CanRouter250k.runTransmitter();
+		CanRouter1.putMsg(okTxMsg);
+		CanRouter1.runTransmitter();
 	}	 
 }
 void SubsystemLedDo()
@@ -477,7 +486,7 @@ void SubsystemLedDo()
 												SpecifiedR,
 												SpecifiedG,
 												SpecifiedB);
-	delay_ms(5);
+//	delay_ms(5);						//to do
 	TIM2->CNT = 0;
 	DMA_Cmd(DMA1_Channel2, DISABLE);
 	DMA_SetCurrDataCounter(DMA1_Channel2,DMA_SIZE);
@@ -493,8 +502,8 @@ void SubsystemADC()
 		ADCMsg.StdId = CAN_DEMAND_VOL_BACK;
 		ADCMsg.Data[0] =AD_VAL&0xFF;
 		ADCMsg.Data[1] =(AD_VAL>>8)&0xFF;
-		CanRouter250k.putMsg(ADCMsg);
-		CanRouter250k.runTransmitter();
+		CanRouter1.putMsg(ADCMsg);
+		CanRouter1.runTransmitter();
 	}
 }
 
@@ -537,8 +546,8 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 			_temp.Data[3]=0;
 			_temp.Data[4]=0x10;
 			_temp.Data[5]=tempRxMsg.Data[5];
-			CanRouter250k.putMsg(_temp);
-			CanRouter250k.runTransmitter();
+			CanRouter1.putMsg(_temp);
+			CanRouter1.runTransmitter();
 		}else{
 			okTxMsg.DLC = 6;
 			okTxMsg.StdId = CAN_Config_LEFTDRIVER_BACK;
@@ -548,8 +557,8 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 			okTxMsg.Data[3] =	0;
 			okTxMsg.Data[5]=0x10;
 			okTxMsg.Data[4] =	0;
-			CanRouter250k.putMsg(okTxMsg);
-			CanRouter250k.runTransmitter();
+			CanRouter1.putMsg(okTxMsg);
+			CanRouter1.runTransmitter();
 		}
 		return 1;
 	}
@@ -589,8 +598,8 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 			_temp.Data[3]=0;
 			_temp.Data[4]=0x10;
 			_temp.Data[5]=tempRxMsg.Data[5];
-			CanRouter250k.putMsg(_temp);
-			CanRouter250k.runTransmitter();
+			CanRouter1.putMsg(_temp);
+			CanRouter1.runTransmitter();
 		}else{
 			okTxMsg.DLC = 6;
 			okTxMsg.StdId = CAN_Config_RIGHTDRIVER_BACK;
@@ -600,8 +609,8 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 			okTxMsg.Data[3] =	0;
 			okTxMsg.Data[5]=0x10;
 			okTxMsg.Data[4] =	0;
-			CanRouter250k.putMsg(okTxMsg);
-			CanRouter250k.runTransmitter();
+			CanRouter1.putMsg(okTxMsg);
+			CanRouter1.runTransmitter();
 		}
 		return 1;
 	}
@@ -748,8 +757,8 @@ void TransimitPos()
 		tempTxMsg.Data[0] = (Wheel_Circle_Left>>24)&0xFF;
 		tempTxMsg.Data[4] =0x01;
 		tempTxMsg.Data[5] = 0;
-		CanRouter250k.putMsg(tempTxMsg);
-		CanRouter250k.runTransmitter();}
+		CanRouter1.putMsg(tempTxMsg);
+		CanRouter1.runTransmitter();}
 	}
 		
 	else if ((tempRxMsg.StdId == CAN_Config_RIGHTDRIVER)&& (tempRxMsg.Data[4]==0x01))
@@ -763,8 +772,8 @@ void TransimitPos()
 		tempTxMsg.Data[0] = (Wheel_Circle_Right>>24)&0xFF;
 		tempTxMsg.Data[4] =0x01;
 		tempTxMsg.Data[5] = 0;
-		CanRouter250k.putMsg(tempTxMsg);
-		CanRouter250k.runTransmitter();}
+		CanRouter1.putMsg(tempTxMsg);
+		CanRouter1.runTransmitter();}
 	}
 	else
 	{;}

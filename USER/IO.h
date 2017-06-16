@@ -8,9 +8,14 @@
 #define Brake_FBPinx		GPIO_Pin_15
 #define Brake_FBPort		GPIOC
 
+#define LEDPIN					GPIO_Pin_10
+#define LEDPORT					GPIOA
+
 void SFIO_Init(void);
 void EMG_ENCmd(FunctionalState state);
 uint8_t SFIO_GetStatus(void);
+void led_init(void);
+void led_toggle();
 
 
 #endif

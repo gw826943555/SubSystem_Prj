@@ -128,12 +128,12 @@
         </DebugOption>
         <Utilities>
           <Flash1>
-            <UseTargetDll>1</UseTargetDll>
+            <UseTargetDll>0</UseTargetDll>
             <UseExternalTool>1</UseExternalTool>
             <RunIndependent>1</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4099</DriverSelection>
+            <DriverSelection>4096</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
@@ -408,6 +408,26 @@
               <FileName>IO.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\USER\IO.c</FilePath>
+            </File>
+            <File>
+              <FileName>Timer.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\USER\Timer.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>iap_cmd.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\USER\iap_cmd.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>rwIO.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\USER\rwIO.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>globaldata.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\USER\globaldata.cpp</FilePath>
             </File>
           </Files>
         </Group>

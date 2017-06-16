@@ -1,5 +1,27 @@
 #include "io.h"
 
+void led_init(void)
+{
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA , ENABLE);
+	GPIO_InitTypeDef GPIO_InitStructure;
+	
+	GPIO_InitStructure.GPIO_Pin = LEDPIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(LEDPORT,&GPIO_InitStructure);
+}
+
+void led_toggle()
+{
+	if(GPIO_ReadInputDataBit(LEDPORT,LEDPIN) == Bit_RESET)
+	{
+		GPIO_WriteBit(LEDPORT,LEDPIN,Bit_SET);
+	}else
+	{
+		GPIO_WriteBit(LEDPORT,LEDPIN,Bit_RESET);
+	}
+}
+
 void SFIO_Init(void)
 {
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO, ENABLE);//开C口时钟，复用时钟

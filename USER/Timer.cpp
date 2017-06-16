@@ -65,3 +65,21 @@ void CPUTIMER0_ISR()
 	BaseTimer::Instance()->doUpdate();
 	SCB->ICSR = SCB_ICSR_PENDSTCLR_Msk;
 }
+
+/**
+  * @brief  This function handles SysTick Handler.
+  * @param  None
+  * @retval None
+  */
+//#ifdef __cplusplus
+// extern "C" {
+//#endif 
+//	 
+//void SysTick_Handler(void)
+//{
+//	CPUTIMER0_ISR();
+//}
+
+//#ifdef __cplusplus
+// }
+//#endif 
