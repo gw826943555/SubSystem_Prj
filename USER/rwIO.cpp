@@ -88,8 +88,6 @@ void rwIO_io_init()
 	GPIO_InitStructure.GPIO_Pin = DO10|DO11|DO11|DO13|DO14|DO15;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_Init(DO_PORT2, &GPIO_InitStructure);
-	
-	GPIO_SetBits(DO_PORT2,DO10);
 }
 
 void rwIO_do_init(void)
@@ -101,15 +99,20 @@ void rwIO_do_init(void)
 
 void read_di()
 {
+	uint32_t tmp = 0;
+	tmp = GPIO_ReadInputData(GPIOA);
+	DiData.Di = ((tmp >> 2) & 0x0F) + ((tmp >> 10) & 0x3F);
 }
 
 void write_do()
 {
+	
 }
 
 void rwIO_do_run()
 {
-	
+	read_di();
+	write_do();
 	if(_rxMailbox.msgsInQue() > 0)
 	{
 		CanRxMsg RxMsg;
