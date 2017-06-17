@@ -175,7 +175,7 @@ void DMA1_Channel2_IRQHandler()
 //  if(DMA_GetITStatus(DMA1_IT_TC2))
 	if(DMA1->ISR&0x00000020)
   {
-		GPIOA->CRL &= 0x3333FFF3;	//change the GPIO mode from AFIO to OUTPP
+//		GPIOA->CRL &= 0x3333FFF3;	//change the GPIO mode from AFIO to OUTPP
     DMA_ClearITPendingBit(DMA1_IT_GL2);
 		
 		//DMAFlag = 1;

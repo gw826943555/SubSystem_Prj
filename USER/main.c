@@ -120,6 +120,15 @@ int main()
 	BatAD_Init();//ADC_Init
 	SFIO_Init();
 	
+	CanTxMsg TXTMP;
+	TXTMP.StdId =0x99;
+	TXTMP.ExtId = 0x00;
+	TXTMP.IDE = CAN_ID_STD;
+	TXTMP.RTR = CAN_RTR_DATA;
+	TXTMP.DLC = 1;
+	TXTMP.Data[0] = 0xcc;
+	CanRouter250k.putMsg(TXTMP);
+	
 	while(1)
 	{
 		DHT_Start();
@@ -127,10 +136,6 @@ int main()
 		AD_VAL = Get_BatVol();
 		delay_ms(500);
 		DhtTxMsg.Data[1]=DHT_Decode(&Dhttemp,&Dhthumi);			//温湿度解析结果
-//		tempTxMsg.StdId = 0x10;
-//		tempTxMsg.ExtId = 0;
-//		tempTxMsg.Data[0]++;
-//		CanRouter250k.putMsg(tempTxMsg);
 		CanRouter250k.runTransmitter();
 		EMG_ENCmd(ENABLE);
 	}
@@ -148,10 +153,6 @@ void SetSubsystemType()
 				okTxMsg.Data[0]|=0x01;
 			  BSP_CONFIG();//StCan_Init
         TIM_Cmd(TIM2, ENABLE);
-        GPIOA->BRR |= 0x0001; 
-				//StopMotor();          //关闭驱动器
-				//TIM_Cmd(TIM4, DISABLE);  
-				//EXTI_DeInit();
 			}else{
 				is_led_open = false;
 				TIM_Cmd(TIM2, DISABLE);    //关闭LED
@@ -166,7 +167,6 @@ void SetSubsystemType()
 				okTxMsg.Data[0]|=0x02;
 				TIM4_PWM_Init(); //PWM Init
 				Hall_IRQConfig();
-//				GPIO_SetBits(GPIOA,GPIO_Pin_8|GPIO_Pin_9);     
 			}else{
 				is_driver_open=false;
 				okTxMsg.Data[0]&=0xFD;
@@ -190,6 +190,21 @@ void SetSubsystemType()
 	}
 	else if(tempRxMsg.StdId == CAN_Config_IO)
 	{
+		if(tempRxMsg.Data[0] == 0x02)
+		{
+			CanTxMsg Txtmp;
+			Txtmp.StdId = 0x00;
+			Txtmp.ExtId = 0x5009;
+			Txtmp.DLC = 4;
+			Txtmp.IDE = CAN_Id_Extended;
+			Txtmp.RTR = CAN_RTR_DATA;
+			Txtmp.Data[0] = tempRxMsg.Data[0];
+			Txtmp.Data[1] = tempRxMsg.Data[1];
+			Txtmp.Data[2] = tempRxMsg.Data[2];
+			Txtmp.Data[3] = tempRxMsg.Data[3];
+			CanRouter250k.putMsg(Txtmp);
+			CanRouter250k.runTransmitter();
+		}
 		_nowType = SUBSYSTEM_IO;		 
 	}
 	else if(tempRxMsg.StdId == CAN_DEMAND_DHT)
@@ -250,6 +265,9 @@ void SubsystemDHTRead()
 //////////////////////////IO/////////////////////////////
 void SubsystemIOConfig()
 {
+	if(tempRxMsg.StdId == 0x615)
+		while(1);
+	
 	if((tempRxMsg.Data[0]&0x01) == 1)  
 	 {
 			u16 ReadInputIO;

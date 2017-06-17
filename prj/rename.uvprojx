@@ -129,11 +129,11 @@
         <Utilities>
           <Flash1>
             <UseTargetDll>1</UseTargetDll>
-            <UseExternalTool>1</UseExternalTool>
+            <UseExternalTool>0</UseExternalTool>
             <RunIndependent>1</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4099</DriverSelection>
+            <DriverSelection>4096</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
