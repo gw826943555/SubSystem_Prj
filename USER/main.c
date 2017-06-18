@@ -37,7 +37,7 @@ u16 series =24;									//电机级数
 u16 stomin =60;									//转速单位转换
 u16 period =3;									//转速与占空比之比
 CanTxMsg tempTxMsg;
-CanRxMsg tempRxMsg;  
+CanRxMsg tempRxMsg;
 CanTxMsg okTxMsg;
 CanTxMsg ADCMsg;
 CanTxMsg DhtTxMsg;
@@ -97,7 +97,6 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg);
 int16_t GetMotorPos(CanRxMsg tempRxMsg);
 void IsNewHallDataIn();
 void Clear();
-void TransimitPos();
 void SubsystemLed();
 void StopMotor();
 void SubsystemIOConfig();
@@ -233,7 +232,7 @@ void SubsystemDorun()
 			case SUBSYSTEM_DRIVER:
 			 { if(is_driver_open){
 				 SetMotorSpeed(tempRxMsg);
-				 TransimitPos();}
+				}
 			   break;}
       case SUBSYSTEM_IO:
        { SubsystemIOConfig();
@@ -517,7 +516,6 @@ void SubsystemADC()
 }
 
 ////////////////////////Motor Drivers//////////////////////////
-CanTxMsg _temp;
 int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 {
 	if(tempRxMsg.StdId == CAN_Config_LEFTDRIVER) //左电机
@@ -543,30 +541,28 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 				setspeed =0;
 			}
 		}
-		if(tempRxMsg.Data[4]==0x10)
+		if(tempRxMsg.Data[4]==0x01)
 		{
-//			CanTxMsg _temp;
-			_temp.DLC=6;
-			_temp.RTR = CAN_RTR_DATA; 
-			_temp.StdId=CAN_Config_LEFTDRIVER_BACK;
-			_temp.Data[0]=0;
-			_temp.Data[1]=0;
-			_temp.Data[2]=0;
-			_temp.Data[3]=0;
-			_temp.Data[4]=0x10;
-			_temp.Data[5]=tempRxMsg.Data[5];
-			CanRouter250k.putMsg(_temp);
+			tempTxMsg.DLC =6;
+			tempTxMsg.StdId = CAN_Config_LEFTDRIVER_BACK;
+			tempTxMsg.Data[3] = (Wheel_Circle_Right)&0xFF;
+			tempTxMsg.Data[2] = (Wheel_Circle_Right>>8)&0xFF;
+			tempTxMsg.Data[1] = (Wheel_Circle_Right>>16)&0xFF;
+			tempTxMsg.Data[0] = (Wheel_Circle_Right>>24)&0xFF;
+			tempTxMsg.Data[5]=tempRxMsg.Data[5];
+			tempTxMsg.Data[4] =	tempRxMsg.Data[4];
+			CanRouter250k.putMsg(tempTxMsg);
 			CanRouter250k.runTransmitter();
 		}else{
-			okTxMsg.DLC = 6;
-			okTxMsg.StdId = CAN_Config_LEFTDRIVER_BACK;
-			okTxMsg.Data[0] = 0;
-			okTxMsg.Data[1] =	0;
-			okTxMsg.Data[2] = 0;
-			okTxMsg.Data[3] =	0;
-			okTxMsg.Data[5]=0x10;
-			okTxMsg.Data[4] =	0;
-			CanRouter250k.putMsg(okTxMsg);
+			tempTxMsg.DLC = 6;
+			tempTxMsg.StdId = CAN_Config_LEFTDRIVER_BACK;
+			tempTxMsg.Data[0] = 0;
+			tempTxMsg.Data[1] =	0;
+			tempTxMsg.Data[2] = 0;
+			tempTxMsg.Data[3] =	0;
+			tempTxMsg.Data[5]=tempRxMsg.Data[5];
+			tempTxMsg.Data[4] =	tempRxMsg.Data[4];
+			CanRouter250k.putMsg(tempTxMsg);
 			CanRouter250k.runTransmitter();
 		}
 		return 1;
@@ -595,30 +591,28 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 				setspeed =0;
 			}
 		}
-		if(tempRxMsg.Data[4]==0x10)
+		if(tempRxMsg.Data[4]==0x01)
 		{
-//			CanTxMsg _temp;
-			_temp.DLC=6;
-			_temp.RTR = CAN_RTR_DATA; 
-			_temp.StdId=CAN_Config_RIGHTDRIVER_BACK;
-			_temp.Data[0]=0;
-			_temp.Data[1]=0;
-			_temp.Data[2]=0;
-			_temp.Data[3]=0;
-			_temp.Data[4]=0x10;
-			_temp.Data[5]=tempRxMsg.Data[5];
-			CanRouter250k.putMsg(_temp);
+			tempTxMsg.DLC =6;
+			tempTxMsg.StdId = CAN_Config_RIGHTDRIVER_BACK;
+			tempTxMsg.Data[3] = (Wheel_Circle_Left)&0xFF;
+			tempTxMsg.Data[2] = (Wheel_Circle_Left>>8)&0xFF;
+			tempTxMsg.Data[1] = (Wheel_Circle_Left>>16)&0xFF;
+			tempTxMsg.Data[0] = (Wheel_Circle_Left>>24)&0xFF;
+			tempTxMsg.Data[5]=tempRxMsg.Data[5];
+			tempTxMsg.Data[4] =	tempRxMsg.Data[4];
+			CanRouter250k.putMsg(tempTxMsg);
 			CanRouter250k.runTransmitter();
 		}else{
-			okTxMsg.DLC = 6;
-			okTxMsg.StdId = CAN_Config_RIGHTDRIVER_BACK;
-			okTxMsg.Data[0] = 0;
-			okTxMsg.Data[1] =	0;
-			okTxMsg.Data[2] = 0;
-			okTxMsg.Data[3] =	0;
-			okTxMsg.Data[5]=0x10;
-			okTxMsg.Data[4] =	0;
-			CanRouter250k.putMsg(okTxMsg);
+			tempTxMsg.DLC = 6;
+			tempTxMsg.StdId = CAN_Config_RIGHTDRIVER_BACK;
+			tempTxMsg.Data[0] = 0;
+			tempTxMsg.Data[1] =	0;
+			tempTxMsg.Data[2] = 0;
+			tempTxMsg.Data[3] =	0;
+			tempTxMsg.Data[5]=tempRxMsg.Data[5];
+			tempTxMsg.Data[4] =	tempRxMsg.Data[4];
+			CanRouter250k.putMsg(tempTxMsg);
 			CanRouter250k.runTransmitter();
 		}
 		return 1;
@@ -751,41 +745,6 @@ int16_t GetMotorPos(CanRxMsg tempRxMsg)
 	Wheel_Circle_Right=Wheel_Circle_Point_Right; 
 	return 1;
 
-}
-
-void TransimitPos()
-{
-	if((tempRxMsg.StdId == CAN_Config_LEFTDRIVER)&& (tempRxMsg.Data[4]==0x01))
-	{
-		if(tempRxMsg.Data[5]==0)
-		{tempTxMsg.StdId = CAN_Config_LEFTDRIVER_BACK;
-		tempTxMsg.DLC =6;
-		tempTxMsg.Data[3] = (Wheel_Circle_Left)&0xFF;
-		tempTxMsg.Data[2] = (Wheel_Circle_Left>>8)&0xFF;
-		tempTxMsg.Data[1] = (Wheel_Circle_Left>>16)&0xFF;
-		tempTxMsg.Data[0] = (Wheel_Circle_Left>>24)&0xFF;
-		tempTxMsg.Data[4] =0x01;
-		tempTxMsg.Data[5] = 0;
-		CanRouter250k.putMsg(tempTxMsg);
-		CanRouter250k.runTransmitter();}
-	}
-		
-	else if ((tempRxMsg.StdId == CAN_Config_RIGHTDRIVER)&& (tempRxMsg.Data[4]==0x01))
-	{
-    if(tempRxMsg.Data[5]==0)
-		{tempTxMsg.StdId = CAN_Config_RIGHTDRIVER_BACK;
-		tempTxMsg.DLC =6;
-		tempTxMsg.Data[3] = (Wheel_Circle_Right)&0xFF;
-		tempTxMsg.Data[2] = (Wheel_Circle_Right>>8)&0xFF;
-		tempTxMsg.Data[1] = (Wheel_Circle_Right>>16)&0xFF;
-		tempTxMsg.Data[0] = (Wheel_Circle_Right>>24)&0xFF;
-		tempTxMsg.Data[4] =0x01;
-		tempTxMsg.Data[5] = 0;
-		CanRouter250k.putMsg(tempTxMsg);
-		CanRouter250k.runTransmitter();}
-	}
-	else
-	{;}
 }
 
 void Clear()
