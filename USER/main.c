@@ -265,198 +265,198 @@ void SubsystemDHTRead()
 //////////////////////////IO/////////////////////////////
 void SubsystemIOConfig()
 {
-	if(tempRxMsg.StdId == 0x615)
-		while(1);
-	
-	if((tempRxMsg.Data[0]&0x01) == 1)  
-	 {
-			u16 ReadInputIO;
+	if(tempRxMsg.StdId == CAN_Config_IO)
+	{
+		if((tempRxMsg.Data[0]&0x01) == 1)  
+		 {
+				u16 ReadInputIO;
 
-			ReadInputIO = GPIO_ReadInputData(GPIOB)&0xFC3C;
-			InputIOMsg.DLC = 4;
-			InputIOMsg.StdId = CAN_Config_IO_BACK;
-			InputIOMsg.Data[0] =0x01;
-			InputIOMsg.Data[1] = (((ReadInputIO>>2)&0x0F)|((ReadInputIO>>6)&0xF0));
-			InputIOMsg.Data[2] = (ReadInputIO>>14)&0x03;		
-			InputIOMsg.Data[3] = SFIO_GetStatus();
-			CanRouter250k.putMsg(InputIOMsg);
+				ReadInputIO = GPIO_ReadInputData(GPIOB)&0xFC3C;
+				InputIOMsg.DLC = 4;
+				InputIOMsg.StdId = CAN_Config_IO_BACK;
+				InputIOMsg.Data[0] =0x01;
+				InputIOMsg.Data[1] = (((ReadInputIO>>2)&0x0F)|((ReadInputIO>>6)&0xF0));
+				InputIOMsg.Data[2] = (ReadInputIO>>14)&0x03;		
+				InputIOMsg.Data[3] = SFIO_GetStatus();
+				CanRouter250k.putMsg(InputIOMsg);
+				CanRouter250k.runTransmitter();
+		 }
+		 else if((tempRxMsg.Data[0]&0x02) == 2)
+		 {
+			//��IO		
+			 if(false==is_driver_open)
+			 {
+				if(((tempRxMsg.Data[2])&0x01) == 1)			//PWMA2
+				{
+					GPIOA->CRL&=0xFFFFF0FF;								//IO模式修改为推挽输出
+					GPIOA->CRL|=0x00000300;
+					GPIO_SetBits(GPIOA, GPIO_Pin_2);
+				}
+				else{
+					GPIOA->CRL&=0xFFFFF0FF;								//IO模式修改为推挽输出
+					GPIOA->CRL|=0x00000300;
+					GPIO_ResetBits(GPIOA, GPIO_Pin_2);
+				}
+				
+				if(((tempRxMsg.Data[2])&0x02) == 2)  		//PWMA3
+				{
+					GPIOA->CRL&=0xFFFF0FFF;								//IO模式修改为推挽输出
+					GPIOA->CRL|=0x00003000;
+					GPIO_SetBits(GPIOA, GPIO_Pin_3);
+				}
+				else
+				{
+					GPIOA->CRL&=0xFFFF0FFF;								//IO模式修改为推挽输出
+					GPIOA->CRL|=0x00003000;
+					GPIO_ResetBits(GPIOA, GPIO_Pin_3);
+				}
+				if((tempRxMsg.Data[2])&0x04) 
+				{
+						GPIOB->CRL&=0xF0FFFFFF;								//IO模式修改为推挽输出
+						GPIOB->CRL|=0x03000000;
+						GPIO_SetBits(GPIOB, GPIO_Pin_6);
+				}
+				else
+				{
+						GPIOB->CRL&=0xF0FFFFFF;								//IOIO模式修改为推挽输出
+						GPIOB->CRL|=0x03000000;
+						GPIO_ResetBits(GPIOB, GPIO_Pin_6);
+				}
+				
+				if((tempRxMsg.Data[2])&0x10) 
+				{
+					GPIOB->CRH&=0xFFFFFFF0;								//IOIO模式修改为推挽输出
+					GPIOB->CRH|=0x00000003;
+					GPIO_SetBits(GPIOB, GPIO_Pin_8);
+				}
+				else
+				{
+					GPIOB->CRH&=0xFFFFFFF0;								//IOIO模式修改为推挽输出
+					GPIOB->CRH|=0x00000003;
+					GPIO_ResetBits(GPIOB, GPIO_Pin_8);
+				}
+			 }
+			 else
+			 {
+	//			 GPIO_SetBits(GPIOA,GPIO_Pin_8);				//打开驱动器电源
+	//			 GPIO_SetBits(GPIOA,GPIO_Pin_9);
+			 }
+			
+			 if(tempRxMsg.Data[1]&0x01)								//PD0
+			 {
+				 GPIO_SetBits(GPIOA,GPIO_Pin_5);
+			 }else
+			 {
+				 GPIO_ResetBits(GPIOA,GPIO_Pin_5);
+			 }
+			 
+			 if(tempRxMsg.Data[1]&0x02)								//PD1
+			 {
+				 GPIO_SetBits(GPIOA,GPIO_Pin_4);
+			 }else
+			 {
+				 GPIO_ResetBits(GPIOA,GPIO_Pin_4);
+			 }
+			 
+			 if(tempRxMsg.Data[1]&0x04)								//PD2
+			 {
+				 GPIO_SetBits(GPIOA,GPIO_Pin_7);
+			 }else
+			 {
+				 GPIO_ResetBits(GPIOA,GPIO_Pin_7);
+			 }
+			 
+			 if(tempRxMsg.Data[1]&0x08)								//PD3
+			 {
+				 GPIO_SetBits(GPIOA,GPIO_Pin_6);
+			 }else
+			 {
+				 GPIO_ResetBits(GPIOA,GPIO_Pin_6);
+			 }
+			 
+			 if((tempRxMsg.Data[1]&0x10)==0x10)			//PWR_EN4
+				{
+					GPIO_SetBits(GPIOA,GPIO_Pin_9);
+				}else
+				{
+					GPIO_ResetBits(GPIOA,GPIO_Pin_9);
+				}
+				
+				if((tempRxMsg.Data[1]&0x20)==0x20)			//PWR_EN5
+				{
+					GPIO_SetBits(GPIOA,GPIO_Pin_8);
+				}else
+				{
+					GPIO_ResetBits(GPIOA,GPIO_Pin_8);
+				}
+				
+				if((tempRxMsg.Data[3]&0x01)==Bit_RESET)
+				{
+					EMG_ENCmd(DISABLE);
+				}else{
+					EMG_ENCmd(ENABLE);
+				}
+			 
+			if(((tempRxMsg.Data[1]>>4)&0x08) == 8)
+			{
+				GPIOA->CRL&=0xFFFFFF0F;								//IO模式修改为推挽输出
+				GPIOA->CRL|=0x00000030;
+				GPIO_SetBits(GPIOA, GPIO_Pin_1);
+			}
+			else
+			{
+				GPIOA->CRL&=0xFFFFFF0F;
+				GPIOA->CRL|=0x00000030;
+				GPIO_ResetBits(GPIOA, GPIO_Pin_1);
+			}
+			
+			if((tempRxMsg.Data[2])&0x08)
+			{
+				GPIOB->CRL&=0x0FFFFFFF;
+				GPIOB->CRL|=0x30000000;
+				GPIO_SetBits(GPIOB, GPIO_Pin_7);
+			}
+			else
+			{
+				GPIOB->CRL&=0x0FFFFFFF;
+				GPIOB->CRL|=0x30000000;
+				GPIO_ResetBits(GPIOB, GPIO_Pin_7);
+			}
+			
+			if((tempRxMsg.Data[2])&0x20)
+			{
+				GPIOB->CRH&=0xFFFFFF0F;
+				GPIOB->CRH|=0x00000030;
+				GPIO_SetBits(GPIOB, GPIO_Pin_9);
+			}
+			else
+			{
+				GPIOB->CRH&=0xFFFFFF0F;
+				GPIOB->CRH|=0x00000030;
+				GPIO_ResetBits(GPIOB, GPIO_Pin_9);
+			}
+
+			if(is_led_open==false)
+			{
+				if(((tempRxMsg.Data[1]>>4)&0x04) == 4)  
+				{
+					GPIOA->CRL&=0xFFFFFFF0;								//IO模式修改为推挽输出
+					GPIOA->CRL|=0x00000003;
+					GPIO_SetBits(GPIOA, GPIO_Pin_0);
+				}
+				else
+				{
+					GPIO_ResetBits(GPIOA, GPIO_Pin_0);
+					GPIOA->CRL&=0xFFFFFFF0;								//IO模式修改为推挽输出
+					GPIOA->CRL|=0x00000003;
+				}
+			}
+			okTxMsg.DLC = 4;
+			okTxMsg.StdId = CAN_Config_IO_BACK;
+			okTxMsg.Data[0]=0x02;
+			CanRouter250k.putMsg(okTxMsg);
 			CanRouter250k.runTransmitter();
-	 }
-	 else if((tempRxMsg.Data[0]&0x02) == 2)
-	 {
-		//��IO		
-		 if(false==is_driver_open)
-		 {
-			if(((tempRxMsg.Data[2])&0x01) == 1)			//PWMA2
-			{
-				GPIOA->CRL&=0xFFFFF0FF;								//IO模式修改为推挽输出
-				GPIOA->CRL|=0x00000300;
-				GPIO_SetBits(GPIOA, GPIO_Pin_2);
-			}
-			else{
-				GPIOA->CRL&=0xFFFFF0FF;								//IO模式修改为推挽输出
-				GPIOA->CRL|=0x00000300;
-				GPIO_ResetBits(GPIOA, GPIO_Pin_2);
-			}
-			
-			if(((tempRxMsg.Data[2])&0x02) == 2)  		//PWMA3
-			{
-				GPIOA->CRL&=0xFFFF0FFF;								//IO模式修改为推挽输出
-				GPIOA->CRL|=0x00003000;
-				GPIO_SetBits(GPIOA, GPIO_Pin_3);
-			}
-			else
-			{
-				GPIOA->CRL&=0xFFFF0FFF;								//IO模式修改为推挽输出
-				GPIOA->CRL|=0x00003000;
-				GPIO_ResetBits(GPIOA, GPIO_Pin_3);
-			}
-			if((tempRxMsg.Data[2])&0x04) 
-			{
-					GPIOB->CRL&=0xF0FFFFFF;								//IO模式修改为推挽输出
-					GPIOB->CRL|=0x03000000;
-					GPIO_SetBits(GPIOB, GPIO_Pin_6);
-			}
-			else
-			{
-					GPIOB->CRL&=0xF0FFFFFF;								//IOIO模式修改为推挽输出
-					GPIOB->CRL|=0x03000000;
-					GPIO_ResetBits(GPIOB, GPIO_Pin_6);
-			}
-			
-			if((tempRxMsg.Data[2])&0x10) 
-			{
-				GPIOB->CRH&=0xFFFFFFF0;								//IOIO模式修改为推挽输出
-				GPIOB->CRH|=0x00000003;
-				GPIO_SetBits(GPIOB, GPIO_Pin_8);
-			}
-			else
-			{
-				GPIOB->CRH&=0xFFFFFFF0;								//IOIO模式修改为推挽输出
-				GPIOB->CRH|=0x00000003;
-				GPIO_ResetBits(GPIOB, GPIO_Pin_8);
-			}
-		 }
-		 else
-		 {
-//			 GPIO_SetBits(GPIOA,GPIO_Pin_8);				//打开驱动器电源
-//			 GPIO_SetBits(GPIOA,GPIO_Pin_9);
-		 }
-		
-		 if(tempRxMsg.Data[1]&0x01)								//PD0
-		 {
-			 GPIO_SetBits(GPIOA,GPIO_Pin_5);
-		 }else
-		 {
-			 GPIO_ResetBits(GPIOA,GPIO_Pin_5);
-		 }
-		 
-		 if(tempRxMsg.Data[1]&0x02)								//PD1
-		 {
-			 GPIO_SetBits(GPIOA,GPIO_Pin_4);
-		 }else
-		 {
-			 GPIO_ResetBits(GPIOA,GPIO_Pin_4);
-		 }
-		 
-		 if(tempRxMsg.Data[1]&0x04)								//PD2
-		 {
-			 GPIO_SetBits(GPIOA,GPIO_Pin_7);
-		 }else
-		 {
-			 GPIO_ResetBits(GPIOA,GPIO_Pin_7);
-		 }
-		 
-		 if(tempRxMsg.Data[1]&0x08)								//PD3
-		 {
-			 GPIO_SetBits(GPIOA,GPIO_Pin_6);
-		 }else
-		 {
-			 GPIO_ResetBits(GPIOA,GPIO_Pin_6);
-		 }
-		 
-		 if((tempRxMsg.Data[1]&0x10)==0x10)			//PWR_EN4
-			{
-				GPIO_SetBits(GPIOA,GPIO_Pin_9);
-			}else
-			{
-				GPIO_ResetBits(GPIOA,GPIO_Pin_9);
-			}
-			
-			if((tempRxMsg.Data[1]&0x20)==0x20)			//PWR_EN5
-			{
-				GPIO_SetBits(GPIOA,GPIO_Pin_8);
-			}else
-			{
-				GPIO_ResetBits(GPIOA,GPIO_Pin_8);
-			}
-			
-			if((tempRxMsg.Data[3]&0x01)==Bit_RESET)
-			{
-				EMG_ENCmd(DISABLE);
-			}else{
-				EMG_ENCmd(ENABLE);
-			}
-		 
-		if(((tempRxMsg.Data[1]>>4)&0x08) == 8)
-		{
-			GPIOA->CRL&=0xFFFFFF0F;								//IO模式修改为推挽输出
-			GPIOA->CRL|=0x00000030;
-			GPIO_SetBits(GPIOA, GPIO_Pin_1);
 		}
-		else
-		{
-			GPIOA->CRL&=0xFFFFFF0F;
-			GPIOA->CRL|=0x00000030;
-			GPIO_ResetBits(GPIOA, GPIO_Pin_1);
-		}
-		
-		if((tempRxMsg.Data[2])&0x08)
-		{
-			GPIOB->CRL&=0x0FFFFFFF;
-			GPIOB->CRL|=0x30000000;
-			GPIO_SetBits(GPIOB, GPIO_Pin_7);
-		}
-		else
-		{
-			GPIOB->CRL&=0x0FFFFFFF;
-			GPIOB->CRL|=0x30000000;
-			GPIO_ResetBits(GPIOB, GPIO_Pin_7);
-		}
-		
-		if((tempRxMsg.Data[2])&0x20)
-		{
-			GPIOB->CRH&=0xFFFFFF0F;
-			GPIOB->CRH|=0x00000030;
-			GPIO_SetBits(GPIOB, GPIO_Pin_9);
-		}
-		else
-		{
-			GPIOB->CRH&=0xFFFFFF0F;
-			GPIOB->CRH|=0x00000030;
-			GPIO_ResetBits(GPIOB, GPIO_Pin_9);
-		}
-
-		if(is_led_open==false)
-		{
-			if(((tempRxMsg.Data[1]>>4)&0x04) == 4)  
-			{
-				GPIOA->CRL&=0xFFFFFFF0;								//IO模式修改为推挽输出
-				GPIOA->CRL|=0x00000003;
-				GPIO_SetBits(GPIOA, GPIO_Pin_0);
-			}
-		  else
-			{
-				GPIO_ResetBits(GPIOA, GPIO_Pin_0);
-				GPIOA->CRL&=0xFFFFFFF0;								//IO模式修改为推挽输出
-				GPIOA->CRL|=0x00000003;
-			}
-		}
-		okTxMsg.DLC = 4;
-		okTxMsg.StdId = CAN_Config_IO_BACK;
-		okTxMsg.Data[0]=0x02;
-		CanRouter250k.putMsg(okTxMsg);
-		CanRouter250k.runTransmitter();
 	}
 }
 ///////////////////////LED////////////////////////////
