@@ -545,10 +545,10 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 		{
 			tempTxMsg.DLC =6;
 			tempTxMsg.StdId = CAN_Config_LEFTDRIVER_BACK;
-			tempTxMsg.Data[3] = (Wheel_Circle_Right)&0xFF;
-			tempTxMsg.Data[2] = (Wheel_Circle_Right>>8)&0xFF;
-			tempTxMsg.Data[1] = (Wheel_Circle_Right>>16)&0xFF;
-			tempTxMsg.Data[0] = (Wheel_Circle_Right>>24)&0xFF;
+			tempTxMsg.Data[3] = (Wheel_Circle_Left)&0xFF;
+			tempTxMsg.Data[2] = (Wheel_Circle_Left>>8)&0xFF;
+			tempTxMsg.Data[1] = (Wheel_Circle_Left>>16)&0xFF;
+			tempTxMsg.Data[0] = (Wheel_Circle_Left>>24)&0xFF;
 			tempTxMsg.Data[5]=tempRxMsg.Data[5];
 			tempTxMsg.Data[4] =	tempRxMsg.Data[4];
 			CanRouter250k.putMsg(tempTxMsg);
@@ -595,10 +595,10 @@ int16_t SetMotorSpeed(CanRxMsg tempRxMsg)
 		{
 			tempTxMsg.DLC =6;
 			tempTxMsg.StdId = CAN_Config_RIGHTDRIVER_BACK;
-			tempTxMsg.Data[3] = (Wheel_Circle_Left)&0xFF;
-			tempTxMsg.Data[2] = (Wheel_Circle_Left>>8)&0xFF;
-			tempTxMsg.Data[1] = (Wheel_Circle_Left>>16)&0xFF;
-			tempTxMsg.Data[0] = (Wheel_Circle_Left>>24)&0xFF;
+			tempTxMsg.Data[3] = (Wheel_Circle_Right)&0xFF;
+			tempTxMsg.Data[2] = (Wheel_Circle_Right>>8)&0xFF;
+			tempTxMsg.Data[1] = (Wheel_Circle_Right>>16)&0xFF;
+			tempTxMsg.Data[0] = (Wheel_Circle_Right>>24)&0xFF;
 			tempTxMsg.Data[5]=tempRxMsg.Data[5];
 			tempTxMsg.Data[4] =	tempRxMsg.Data[4];
 			CanRouter250k.putMsg(tempTxMsg);
