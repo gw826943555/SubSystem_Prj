@@ -108,6 +108,10 @@ void SubsystemADC();
 int main()
 {
 	SCB->VTOR=0x08008000;
+	
+	GPIO_ResetBits(GPIOA,GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3);
+	GPIO_ResetBits(GPIOB,GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_9);						//default io status
+	GPIO_ResetBits(GPIOA,GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_9);
 	//NVIC_SetVectorTable(NVIC_VectTab_FLASH,0x08008000);
 	CommonConfig();
 	GPIO_ResetBits(GPIOB,GPIO_Pin_6|GPIO_Pin_8);
