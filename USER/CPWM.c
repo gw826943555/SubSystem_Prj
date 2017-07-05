@@ -10,38 +10,38 @@ static void TIM4_GPIO_Config(void)
 
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE); 
 
-  GPIO_InitStructure.GPIO_Pin =GPIO_Pin_6 | GPIO_Pin_8; //PWMÊä³ö  Í¨µÀ1¡¢3
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;		    // ¸´ÓÃ¿ªÂ©
+  GPIO_InitStructure.GPIO_Pin =GPIO_Pin_6 | GPIO_Pin_8; //PWMè¾“å‡º  é€šé“1ã€3
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;		    // å¤ç”¨å¼€æ¼
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
 
 
 /*
- * º¯ÊıÃû£ºSPEED_GPIO_Config
- * ÃèÊö  £ºÅäÖÃËÙ¶È¿ØÖÆĞèÒªÓÃµ½µÄGPIO¶Ë¿Ú
- * ÊäÈë  £ºÎŞ
- * Êä³ö  £ºÎŞ
- * µ÷ÓÃ  £ºÄÚ²¿µ÷ÓÃ
+ * å‡½æ•°åï¼šSPEED_GPIO_Config
+ * æè¿°  ï¼šé…ç½®é€Ÿåº¦æ§åˆ¶éœ€è¦ç”¨åˆ°çš„GPIOç«¯å£
+ * è¾“å…¥  ï¼šæ— 
+ * è¾“å‡º  ï¼šæ— 
+ * è°ƒç”¨  ï¼šå†…éƒ¨è°ƒç”¨
  */
 
 static void SPEED_GPIO_Config(void) 
 { 
 	GPIO_InitTypeDef GPIO_InitStructure;
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA , ENABLE);
-  GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_2| GPIO_Pin_3; //GPIO_Pin_2 GPIO_Pin_3 ¿ÉÄÜ»á»µ
+  GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_2| GPIO_Pin_3; //GPIO_Pin_2 GPIO_Pin_3 å¯èƒ½ä¼šå
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;		    
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(GPIOA, &GPIO_InitStructure);    //PA2 ¿ØÖÆ×óµç»úFR·½Ïò   PA3 ¿ØÖÆÓÒµç»úFR·½Ïò
+  GPIO_Init(GPIOA, &GPIO_InitStructure);    //PA2 æ§åˆ¶å·¦ç”µæœºFRæ–¹å‘   PA3 æ§åˆ¶å³ç”µæœºFRæ–¹å‘
 }
 
 
 /*
- * º¯ÊıÃû£ºTIM4_Mode_Config
- * ÃèÊö  £ºÅäÖÃTIM4Êä³öµÄPWMĞÅºÅµÄÄ£Ê½£¬ÈçÖÜÆÚ¡¢¼«ĞÔ¡¢Õ¼¿Õ±È
- * ÊäÈë  £ºÎŞ
- * Êä³ö  £ºÎŞ
- * µ÷ÓÃ  £ºÄÚ²¿µ÷ÓÃ
+ * å‡½æ•°åï¼šTIM4_Mode_Config
+ * æè¿°  ï¼šé…ç½®TIM4è¾“å‡ºçš„PWMä¿¡å·çš„æ¨¡å¼ï¼Œå¦‚å‘¨æœŸã€ææ€§ã€å ç©ºæ¯”
+ * è¾“å…¥  ï¼šæ— 
+ * è¾“å‡º  ï¼šæ— 
+ * è°ƒç”¨  ï¼šå†…éƒ¨è°ƒç”¨
  */
 static void TIM4_Mode_Config(void)
 {
@@ -78,7 +78,7 @@ void Right_HALL_IN_GPIO_Config(void)
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);
 	GPIO_InitTypeDef  GPIO_Initure;
 	//GPIO_DeInit(GPIOB);                                     
-	GPIO_Initure.GPIO_Pin=GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4; //½ÓÊÕÓÒµç»úÊäÈëHALLµçÆ½ĞÅºÅ
+	GPIO_Initure.GPIO_Pin=GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4; //æ¥æ”¶å³ç”µæœºè¾“å…¥HALLç”µå¹³ä¿¡å·
 	GPIO_Initure.GPIO_Mode=GPIO_Mode_IPD;
 	GPIO_Initure.GPIO_Speed=GPIO_Speed_50MHz;
 	GPIO_Init(GPIOB,&GPIO_Initure);
@@ -88,7 +88,7 @@ void Left_HALL_IN_GPIO_Config(void)
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);
 	GPIO_InitTypeDef  GPIO_Initure;
 	//GPIO_DeInit(GPIOB);                                        
-	GPIO_Initure.GPIO_Pin=GPIO_Pin_10|GPIO_Pin_11|GPIO_Pin_12;//½ÓÊÕ×óµç»úÊäÈëHALLµçÆ½ĞÅºÅ
+	GPIO_Initure.GPIO_Pin=GPIO_Pin_10|GPIO_Pin_11|GPIO_Pin_12;//æ¥æ”¶å·¦ç”µæœºè¾“å…¥HALLç”µå¹³ä¿¡å·
 	GPIO_Initure.GPIO_Mode=GPIO_Mode_IPD;
 	GPIO_Initure.GPIO_Speed=GPIO_Speed_50MHz;
 	GPIO_Init(GPIOB,&GPIO_Initure);
@@ -102,8 +102,8 @@ void TIM4_PWM_Init(void)
 	Right_HALL_IN_GPIO_Config();
 	Left_HALL_IN_GPIO_Config();
 	
-  GPIO_SetBits(GPIOA,GPIO_Pin_2);  //³õÊ¼»¯¸ßµçÆ½PA2Õı×ª ×óµç»ú
-	GPIO_SetBits(GPIOA,GPIO_Pin_3); //³õÊ¼»¯¸ßµçÆ½PA3Õı×ª ÓÒµç»ú
+  GPIO_SetBits(GPIOA,GPIO_Pin_2);  //åˆå§‹åŒ–é«˜ç”µå¹³PA2æ­£è½¬ å·¦ç”µæœº
+	GPIO_SetBits(GPIOA,GPIO_Pin_3); //åˆå§‹åŒ–é«˜ç”µå¹³PA3æ­£è½¬ å³ç”µæœº
 }
 
 
