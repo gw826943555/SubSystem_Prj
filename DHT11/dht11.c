@@ -3,15 +3,15 @@
 uint16_t DHT_CapBuf[45];
 uint8_t i=0;
 
-//³õÊ¼»¯DHT11µÄIO¿Ú DQ Í¬Ê±¼ì²âDHT11µÄ´æÔÚ 
-//·µ»Ø1:²»´æÔÚ 
-//·µ»Ø0:´æÔÚ    	  
+//åˆå§‹åŒ–DHT11çš„IOå£ DQ åŒæ—¶æ£€æµ‹DHT11çš„å­˜åœ¨ 
+//è¿”å›1:ä¸å­˜åœ¨ 
+//è¿”å›0:å­˜åœ¨    	  
 u8 DHT_Init(void) 
 {
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);
-	GPIOB->CRL&=0XFFFFFF0F;//PORTB.1 ÍÆÍìÊä³ö 
+	GPIOB->CRL&=0XFFFFFF0F;//PORTB.1 æ¨æŒ½è¾“å‡º 
 	GPIOB->CRL|=0X00000070; 
-	GPIOB->ODR|=1<<1;      //Êä³ö1	   
+	GPIOB->ODR|=1<<1;      //è¾“å‡º1	   
 	return 0;  
 }
 
@@ -23,7 +23,7 @@ void DHT_TimerInit(void)
 	
 	TIM_TimeBaseInitStructure.TIM_ClockDivision=TIM_CKD_DIV1;
 	TIM_TimeBaseInitStructure.TIM_Prescaler=71;
-	TIM_TimeBaseInitStructure.TIM_Period=50000;
+	TIM_TimeBaseInitStructure.TIM_Period=25000;
 	TIM_TimeBaseInitStructure.TIM_CounterMode=TIM_CounterMode_Up;
 	TIM_TimeBaseInit(TIM3,&TIM_TimeBaseInitStructure);
 	
@@ -50,7 +50,7 @@ void DHT_StartTimer(uint16_t delayus)
 {
 	TIM_SetCounter(TIM3,0);
 	TIM_Cmd(TIM3,ENABLE);
-	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);					//Çå³ıTIM3ÖĞ¶Ï¹ÒÆğ±êÖ¾Î»£¬µÈ´ıÑÓÊ±½áÊø
+	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);					//æ¸…é™¤TIM3ä¸­æ–­æŒ‚èµ·æ ‡å¿—ä½ï¼Œç­‰å¾…å»¶æ—¶ç»“æŸ
 	TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE);
 	TIM_ITConfig(TIM3,TIM_IT_CC4,DISABLE);
 }
@@ -58,7 +58,7 @@ void DHT_StartTimer(uint16_t delayus)
 void DHT_Start(void)
 {
 //	if(DHT_CapBuf[43]==0xaa)
-//		return ;																				//ÉÏÒ»Ö¡Ã»ÓĞ½âÂë
+//		return ;																				//ä¸Šä¸€å¸§æ²¡æœ‰è§£ç 
 	DHT11_DQ_OUT=1;
 	DHT11_IO_OUT();
 	DHT11_DQ_OUT=0;
@@ -68,8 +68,10 @@ void DHT_Start(void)
 u8 DHT_Decode(uint8_t *temp,uint8_t *humi)
 {
 	uint64_t dat=0;
+	uint8_t humi_point_value = 0;
+	uint8_t temp_point_value = 0;
 //	if(DHT_CapBuf[43]!=0xaa)
-//		return 1;																			//Êı¾İÎ´½ÓÊÕÍê³É
+//		return 1;																			//æ•°æ®æœªæ¥æ”¶å®Œæˆ
 	if(DHT_CapBuf[1]>130&DHT_CapBuf[1]<190)
 	{
 		for(uint8_t i=2;i<42;++i)
@@ -82,20 +84,22 @@ u8 DHT_Decode(uint8_t *temp,uint8_t *humi)
 			{
 			}else
 			{
-				return 1;																	//Êı¾İ´íÎó
+				return 1;																	//æ•°æ®é”™è¯¯
 			}
 		}
 		*humi=dat>>32;
-		*temp=(dat>>16)&0xFf;
-		if((*temp+*humi)==(dat&0xFf))
+		humi_point_value = (dat >> 24) & 0xFF;
+		*temp=(dat>>16)&0xFF;
+		temp_point_value = (dat >> 8) & 0xFF;
+		if((*temp + *humi + humi_point_value + temp_point_value)==(dat&0xFF))
 		{
 			DHT_CapBuf[43]=0;
-			return 0;																	//Êı¾İ½âÎöÍê³É
+			return 0;																	//æ•°æ®è§£æå®Œæˆ
 		}
 		else
-			return 1;																	//Êı¾İĞ£Ñé´íÎó
+			return 1;																	//æ•°æ®æ ¡éªŒé”™è¯¯
 	}
-	return 1;																			//ÆğÊ¼Ö¡³¤¶È´íÎó
+	return 1;																			//èµ·å§‹å¸§é•¿åº¦é”™è¯¯
 }
 #ifdef __cplusplus
  extern "C" {
@@ -112,7 +116,7 @@ void TIM3_IRQHandler(void)
 		TIM_ITConfig(TIM3,TIM_IT_CC4,ENABLE);
 		TIM_SetCounter(TIM3,0);
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);
-		TIM_ClearITPendingBit(TIM3,TIM_IT_CC4);					//Çå³ıÊäÈë²¶»ñÍ¨µÀ4ÖĞ¶Ï¹ÒÆğ±êÖ¾Î»
+		TIM_ClearITPendingBit(TIM3,TIM_IT_CC4);					//æ¸…é™¤è¾“å…¥æ•è·é€šé“4ä¸­æ–­æŒ‚èµ·æ ‡å¿—ä½
 		DHT_CapBuf[43]=0;
 	}
 	if(TIM_GetITStatus(TIM3,TIM_IT_CC4)==SET)
