@@ -189,21 +189,26 @@ void DMA1_Channel2_IRQHandler()
 }
 
 extern CanRxMsg tempRxMsg; 
-uint8_t IAP_CMD[8]={0x09,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF};
+uint8_t RESET_CMD[8]={0x09,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF};
+uint8_t BL_CMD[8]={0x07,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF};
+#include <stdlib.h>
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
 	memset((void*)&tempRxMsg, 0, sizeof(tempRxMsg));
   CAN_Receive(CAN1, CAN_FIFO0, &tempRxMsg);
 	if(tempRxMsg.ExtId==0x5005)
-	{
-		for(uint8_t i=0;i<8;++i)
-		{
-			if(tempRxMsg.Data[i]!=IAP_CMD[i])
-				return ;
-		}
+	{	
 		CanTxMsg rstReplyMsg;
 		rstReplyMsg.ExtId = 0x5004;
-		rstReplyMsg.Data[0] = 0x09;
+		if(0 == memcmp(tempRxMsg.Data, RESET_CMD, 8))
+			rstReplyMsg.Data[0] = RESET_CMD[0];
+		else if(0 == memcmp(tempRxMsg.Data, BL_CMD, 8))
+		{
+			rstReplyMsg.Data[0] = BL_CMD[0];
+		}else
+		{
+			return;
+		}
 		rstReplyMsg.Data[1] = 0x00;
 		rstReplyMsg.Data[2] = 0x00;
 		rstReplyMsg.Data[3] = 0x00;
