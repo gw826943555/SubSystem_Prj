@@ -140,7 +140,6 @@ int main()
 		delay_ms(500);
 		DhtTxMsg.Data[1]=DHT_Decode(&Dhttemp,&Dhthumi);			//温湿度解析结果
 		CanRouter250k.runTransmitter();
-		EMG_ENCmd(ENABLE);
 	}
 }
 
