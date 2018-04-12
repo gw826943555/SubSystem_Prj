@@ -2,3 +2,6 @@
 /prj/out
 /prj/rename.uvguix.seer
 /prj/JLinkLog.txt
+
+*.zhyaic
+JLinkLog.txt

@@ -14,6 +14,7 @@
 #include "ADC.h"
 #include "delay.h"
 #include "IO.h"
+#include "HeartLed.h"
 
 enum subsystemMode
 {
@@ -131,6 +132,7 @@ int main()
 	TXTMP.DLC = 1;
 	TXTMP.Data[0] = 0xcc;
 	CanRouter250k.putMsg(TXTMP);
+	Initial_HeartLED();
 	
 	while(1)
 	{
@@ -140,6 +142,7 @@ int main()
 		delay_ms(500);
 		DhtTxMsg.Data[1]=DHT_Decode(&Dhttemp,&Dhthumi);			//温湿度解析结果
 		CanRouter250k.runTransmitter();
+		HeartLed_Run();
 	}
 }
 

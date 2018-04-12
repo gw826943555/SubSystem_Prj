@@ -409,6 +409,11 @@
               <FileType>1</FileType>
               <FilePath>..\USER\IO.c</FilePath>
             </File>
+            <File>
+              <FileName>HeartLed.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\HeartLed.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
